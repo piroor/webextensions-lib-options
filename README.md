@@ -47,4 +47,4 @@ Load the file `Options.js` from your options page:
 <p<label>List of attributes: <input type="text" id="attributes"></label></p>
 ```
 
-Then the `Options` detects elements which have their own ID same to one of given configs (an instance of [`Cofnigs`](https://github.com/piroor/webextensions-lib-configs), and bind them to configs.
+Then the `Options` detects an element which has its own ID same to each given config (defined with [`Cofnigs`](https://github.com/piroor/webextensions-lib-configs)), and bind the config to the element. The element is initialized with the current value. If you change the state of the element itself, then it will be synchronized to the value of the related config.
