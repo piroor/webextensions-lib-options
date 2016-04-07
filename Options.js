@@ -17,7 +17,7 @@ Options.prototype = {
 	UI_TYPE_TEXT_FIELD : 1 << 0,
 	UI_TYPE_CHECKBOX   : 1 << 1,
 
-	detectUIType : function()
+	detectUIType : function(aKey)
 	{
 		var node = document.getElementById(aKey);
 		if (node.localName == 'textarea')
