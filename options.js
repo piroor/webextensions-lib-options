@@ -5,7 +5,7 @@
 */
 
 var Options = {
-	configs : {},
+	configs : null,
 
 	throttleTimers : {},
 	throttledUpdate : function(aKey, aValue) {
@@ -36,6 +36,9 @@ var Options = {
 
 	onReady : function()
 	{
+		if (!this.configs || !this.configs.$loaded)
+			throw new Error('you must give configs!');
+
 		this.configs.$loaded
 			.then((function() {
 				Object.keys(this.configs.$default).forEach(function(aKey) {
