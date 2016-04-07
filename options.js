@@ -7,6 +7,33 @@
 var Options = {
 	configs : null,
 
+	UI_TYPE_UNKNOWN    : 0,
+	UI_TYPE_TEXT_FIELD : 1 << 0,
+	UI_TYPE_CHECKBOX   : 1 << 1,
+
+	detectUIType : function()
+	{
+		var node = document.getElementById(aKey);
+		if (node.localName == 'textarea')
+			return this.UI_TYPE_TEXT_FIELD;
+
+		if (node.localName != 'input')
+			return this.UI_TYPE_UNKNOWN;
+
+		switch (node.type)
+		{
+			case 'text':
+			case 'password':
+				return this.UI_TYPE_TEXT_FIELD;
+
+			case 'checkbox':
+				return this.UI_TYPE_CHECKBOX;
+
+			default:
+				return this.UI_TYPE_UNKNOWN;
+		}
+	},
+
 	throttleTimers : {},
 	throttledUpdate : function(aKey, aValue) {
 		if (this.throttleTimers[aKey])
@@ -42,14 +69,18 @@ var Options = {
 		this.configs.$loaded
 			.then((function() {
 				Object.keys(this.configs.$default).forEach(function(aKey) {
-					switch (typeof this.configs[aKey])
+					switch (this.detectUIType(aKey))
 					{
-						case 'boolean':
+						case this.UI_TYPE_CHECKBOX:
 							this.bindToCheckbox(aKey);
 							break;
 
+						case this.UI_TYPE_TEXT_FIELD:
+							this.bindToTextField(aKey);
+							break;
+
 						default:
-							this.bindToTextField('attrList');
+							throw new Error('unknown type UI element for ' + aKey);
 					}
 				}, this);
 			}).bind(this));
