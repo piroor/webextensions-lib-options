@@ -4,7 +4,13 @@
    http://github.com/piroor/webextensions-lib-options
 */
 
-var Options = {
+function Options(aConfigs) {
+	this.configs = aConfigs;
+
+	this.onReady = this.onReady.bind(this);
+	document.addEventListener('DOMContentLoaded', this.onReady);
+}
+Options.prototype = {
 	configs : null,
 
 	UI_TYPE_UNKNOWN    : 0,
@@ -63,6 +69,8 @@ var Options = {
 
 	onReady : function()
 	{
+		document.removeEventListener('DOMContentLoaded', this.onReady);
+
 		if (!this.configs || !this.configs.$loaded)
 			throw new Error('you must give configs!');
 
@@ -85,9 +93,4 @@ var Options = {
 				}, this);
 			}).bind(this));
 	}
-}
-
-document.addEventListener('DOMContentLoaded', function onReady() {
-	document.removeEventListener('DOMContentLoaded', onReady);
-	Options.onReady();
-});
+};
