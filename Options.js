@@ -90,7 +90,7 @@ Options.prototype = {
 							this.bindToTextField(aKey);
 							break;
 
-						case this.UI_MISSING
+						case this.UI_MISSING:
 							return;
 
 						default:
