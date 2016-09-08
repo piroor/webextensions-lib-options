@@ -20,6 +20,9 @@ Options.prototype = {
 	detectUIType : function(aKey)
 	{
 		var node = document.getElementById(aKey);
+		if (!node)
+			return this.UI_MISSING;
+
 		if (node.localName == 'textarea')
 			return this.UI_TYPE_TEXT_FIELD;
 
@@ -86,6 +89,9 @@ Options.prototype = {
 						case this.UI_TYPE_TEXT_FIELD:
 							this.bindToTextField(aKey);
 							break;
+
+						case this.UI_MISSING
+							return;
 
 						default:
 							throw new Error('unknown type UI element for ' + aKey);
