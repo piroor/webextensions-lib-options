@@ -1,13 +1,15 @@
 /*
- license: The MIT License, Copyright (c) 2016 YUKI "Piro" Hiroshi
+ license: The MIT License, Copyright (c) 2016-2017 YUKI "Piro" Hiroshi
  original:
    http://github.com/piroor/webextensions-lib-options
 */
 
 function Options(aConfigs) {
 	this.configs = aConfigs;
+	this.uiNodes = {};
 
 	this.onReady = this.onReady.bind(this);
+	this.onConfigChanged = this.onConfigChanged.bind(this)
 	document.addEventListener('DOMContentLoaded', this.onReady);
 }
 Options.prototype = {
@@ -60,6 +62,8 @@ Options.prototype = {
 		node.addEventListener('change', (function() {
 			this.throttledUpdate(aKey, node.checked);
 		}).bind(this));
+		node.disabled = aKey in this.configs.$locked;
+		this.uiNodes[aKey] = node;
 	},
 	bindToTextField : function(aKey)
 	{
@@ -68,6 +72,8 @@ Options.prototype = {
 		node.addEventListener('input', (function() {
 			this.throttledUpdate(aKey, node.value);
 		}).bind(this));
+		node.disabled = aKey in this.configs.$locked;
+		this.uiNodes[aKey] = node;
 	},
 
 	onReady : function()
@@ -77,6 +83,7 @@ Options.prototype = {
 		if (!this.configs || !this.configs.$loaded)
 			throw new Error('you must give configs!');
 
+		this.configs.$addObserver(this.onConfigChanged);
 		this.configs.$loaded
 			.then((function() {
 				Object.keys(this.configs.$default).forEach(function(aKey) {
@@ -98,5 +105,19 @@ Options.prototype = {
 					}
 				}, this);
 			}).bind(this));
+	},
+
+	onConfigChanged : function(aKey) {
+		var node = this.uiNodes[aKey];
+		if (!node)
+			return;
+
+		if ('checked' in node) {
+			node.checked = !!this.configs[aKey];
+		}
+		else {
+			node.value = this.configs[aKey];
+		}
+		node.disabled = this.configs.$locked[aKey];
 	}
 };
