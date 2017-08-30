@@ -80,8 +80,11 @@ Options.prototype = {
 	bindToRadio : function(aKey)
 	{
 		var radios = document.querySelectorAll('input[name="' + aKey + '"]');
+		var activated = false;
 		Array.slice(radios).forEach((function(aRadio) {
 			aRadio.addEventListener('change', (function() {
+				if (!activated)
+					return;
 				if (this.configs[aKey] != aRadio.value)
 					this.throttledUpdate(aKey, aRadio.value);
 			}).bind(this));
@@ -91,6 +94,9 @@ Options.prototype = {
 		var chosen = this.uiNodes[aKey + '-' + this.configs[aKey]];
 		if (chosen)
 			chosen.checked = true;
+		setTimeout(function() {
+			activated = false;
+		}, 0);
 	},
 	bindToTextField : function(aKey)
 	{
