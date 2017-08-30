@@ -18,10 +18,13 @@ Options.prototype = {
 	UI_TYPE_UNKNOWN    : 0,
 	UI_TYPE_TEXT_FIELD : 1 << 0,
 	UI_TYPE_CHECKBOX   : 1 << 1,
+	UI_TYPE_RADIO      : 1 << 2,
 
 	detectUIType : function(aKey)
 	{
 		var node = document.getElementById(aKey);
+		if (!node) // maybe radio
+			node = document.querySelector('input[name="' + aKey + '"]');
 		if (!node)
 			return this.UI_MISSING;
 
@@ -39,6 +42,9 @@ Options.prototype = {
 
 			case 'checkbox':
 				return this.UI_TYPE_CHECKBOX;
+
+			case 'radio':
+				return this.UI_TYPE_RADIO;
 
 			default:
 				return this.UI_TYPE_UNKNOWN;
@@ -64,6 +70,18 @@ Options.prototype = {
 		}).bind(this));
 		node.disabled = aKey in this.configs.$locked;
 		this.uiNodes[aKey] = node;
+	},
+	bindToRadio : function(aKey)
+	{
+		var radios = document.querySelectorAll('input[name="' + aKey + '"]');
+		for (let radio of radios) {
+			radio.checked = radio.value == configs[aKey];
+			radio.addEventListener('change', (function() {
+				this.throttledUpdate(aKey, radio.value);
+			}).bind(this));
+			radio.disabled = aKey in this.configs.$locked;
+			this.uiNodes[aKey + '-' + radio.value] = radio;
+		}
 	},
 	bindToTextField : function(aKey)
 	{
@@ -93,6 +111,10 @@ Options.prototype = {
 							this.bindToCheckbox(aKey);
 							break;
 
+						case this.UI_TYPE_RADIO:
+							this.bindToRadio(aKey);
+							break;
+
 						case this.UI_TYPE_TEXT_FIELD:
 							this.bindToTextField(aKey);
 							break;
@@ -109,6 +131,8 @@ Options.prototype = {
 
 	onConfigChanged : function(aKey) {
 		var node = this.uiNodes[aKey];
+		if (!node) // possibly radio
+			node = this.uiNodes[aKey + '-' + configs[aKey]];
 		if (!node)
 			return;
 
