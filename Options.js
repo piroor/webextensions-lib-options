@@ -23,7 +23,7 @@ Options.prototype = {
 	findUIForKey : function(aKey)
 	{
 		return document.querySelector([
-		  '[name="' + aKey + ']',
+		  '[name="' + aKey + '"]',
 		  '#' + aKey
 		].join(','));
 	},
