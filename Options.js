@@ -20,11 +20,17 @@ Options.prototype = {
 	UI_TYPE_CHECKBOX   : 1 << 1,
 	UI_TYPE_RADIO      : 1 << 2,
 
+	findUIForKey : function(aKey)
+	{
+		return document.querySelector([
+		  '[name="' + aKey + ']',
+		  '#' + aKey
+		].join(','));
+	},
+
 	detectUIType : function(aKey)
 	{
-		var node = document.getElementById(aKey);
-		if (!node) // maybe radio
-			node = document.querySelector('input[name="' + aKey + '"]');
+		var node = this.findUIForKey(aKey);
 		if (!node)
 			return this.UI_MISSING;
 
@@ -63,7 +69,7 @@ Options.prototype = {
 
 	bindToCheckbox : function(aKey)
 	{
-		var node = document.getElementById(aKey);
+		var node = this.findUIForKey(aKey);
 		node.checked = this.configs[aKey];
 		node.addEventListener('change', (function() {
 			this.throttledUpdate(aKey, node.checked);
@@ -85,7 +91,7 @@ Options.prototype = {
 	},
 	bindToTextField : function(aKey)
 	{
-		var node = document.getElementById(aKey);
+		var node = this.findUIForKey(aKey);
 		node.value = this.configs[aKey];
 		node.addEventListener('input', (function() {
 			this.throttledUpdate(aKey, node.value);
