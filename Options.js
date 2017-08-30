@@ -95,7 +95,7 @@ Options.prototype = {
 		if (chosen)
 			chosen.checked = true;
 		setTimeout(function() {
-			activated = false;
+			activated = true;
 		}, 0);
 	},
 	bindToTextField : function(aKey)
