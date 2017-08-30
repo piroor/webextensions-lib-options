@@ -80,14 +80,17 @@ Options.prototype = {
 	bindToRadio : function(aKey)
 	{
 		var radios = document.querySelectorAll('input[name="' + aKey + '"]');
-		for (let radio of radios) {
-			radio.checked = radio.value == configs[aKey];
-			radio.addEventListener('change', (function() {
-				this.throttledUpdate(aKey, radio.value);
+		Array.slice(radios).forEach((function(aRadio) {
+			aRadio.addEventListener('change', (function() {
+				if (this.configs[aKey] != aRadio.value)
+					this.throttledUpdate(aKey, aRadio.value);
 			}).bind(this));
-			radio.disabled = aKey in this.configs.$locked;
-			this.uiNodes[aKey + '-' + radio.value] = radio;
-		}
+			aRadio.disabled = aKey in this.configs.$locked;
+			this.uiNodes[aKey + '-' + aRadio.value] = aRadio;
+		}).bind(this));
+		var chosen = this.uiNodes[aKey + '-' + this.configs[aKey]];
+		if (chosen)
+			chosen.checked = true;
 	},
 	bindToTextField : function(aKey)
 	{
