@@ -44,6 +44,7 @@ Options.prototype = {
 		{
 			case 'text':
 			case 'password':
+			case 'number':
 				return this.UI_TYPE_TEXT_FIELD;
 
 			case 'checkbox':
