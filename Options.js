@@ -21,16 +21,11 @@ Options.prototype = {
   UI_TYPE_RADIO      : 1 << 2,
   UI_TYPE_SELECTBOX  : 1 << 3,
 
-  findUIForKey : function(aKey)
-  {
-    return document.querySelector([
-      '[name="' + aKey + '"]',
-      '#' + aKey
-    ].join(','));
+  findUIForKey : function(aKey) {
+    return document.querySelector(`[name="${aKey}"], #${aKey}`);
   },
 
-  detectUIType : function(aNode)
-  {
+  detectUIType : function(aNode) {
     if (!aNode)
       return this.UI_MISSING;
 
@@ -43,8 +38,7 @@ Options.prototype = {
     if (aNode.localName != 'input')
       return this.UI_TYPE_UNKNOWN;
 
-    switch (aNode.type)
-    {
+    switch (aNode.type) {
       case 'text':
       case 'password':
       case 'number':
@@ -65,7 +59,7 @@ Options.prototype = {
   throttledUpdate : function(aKey, aValue) {
     if (this.throttleTimers[aKey])
       clearTimeout(this.throttleTimers[aKey]);
-    this.throttleTimers[aKey] = setTimeout((function() {
+    this.throttleTimers[aKey] = setTimeout(() => {
       delete this.throttleTimers[aKey];
       switch (typeof this.configs.$default[aKey]) {
         case 'string':
@@ -84,61 +78,57 @@ Options.prototype = {
           break;
       }
       this.configs[aKey] = aValue;
-    }).bind(this), 250);
+    }, 250);
   },
 
-  bindToCheckbox : function(aKey, aNode)
-  {
+  bindToCheckbox : function(aKey, aNode) {
     aNode.checked = this.configs[aKey];
-    aNode.addEventListener('change', (function() {
+    aNode.addEventListener('change', () => {
       this.throttledUpdate(aKey, aNode.checked);
-    }).bind(this));
+    });
     aNode.disabled = aKey in this.configs.$locked;
     this.addResetMethod(aKey, aNode);
     this.uiNodes[aKey] = this.uiNodes[aKey] || [];
     this.uiNodes[aKey].push(aNode);
   },
-  bindToRadio : function(aKey)
-  {
+  bindToRadio : function(aKey) {
     var radios = document.querySelectorAll('input[name="' + aKey + '"]');
     var activated = false;
-    Array.slice(radios).forEach((function(aRadio) {
-      aRadio.addEventListener('change', (function() {
+    Array.slice(radios).forEach((aRadio) => {
+      aRadio.addEventListener('change', () => {
         if (!activated)
           return;
         var stringifiedValue = this.configs[aKey];
         if (stringifiedValue != aRadio.value)
           this.throttledUpdate(aKey, aRadio.value);
-      }).bind(this));
+      });
       aRadio.disabled = aKey in this.configs.$locked;
       var key = aKey + '-' + aRadio.value;
       this.uiNodes[key] = this.uiNodes[key] || [];
       this.uiNodes[key].push(aRadio);
-    }).bind(this));
+    });
     var chosen = this.uiNodes[aKey + '-' + this.configs[aKey]][0];
     if (chosen)
       chosen.checked = true;
-    setTimeout(function() {
+    setTimeout(() => {
       activated = true;
     }, 0);
   },
-  bindToTextField : function(aKey, aNode)
-  {
+  bindToTextField : function(aKey, aNode) {
     aNode.value = this.configs[aKey];
-    aNode.addEventListener('input', (function() {
+    aNode.addEventListener('input', () => {
       this.throttledUpdate(aKey, aNode.value);
-    }).bind(this));
+    });
     aNode.disabled = aKey in this.configs.$locked;
     this.addResetMethod(aKey, aNode);
     this.uiNodes[aKey] = this.uiNodes[aKey] || [];
     this.uiNodes[aKey].push(aNode);
   },
-  bindToSelectBox : function(aKey, aNode)
-  {
+  bindToSelectBox : function(aKey, aNode) {
     aNode.value = this.configs[aKey];
-    aNode.addEventListener('change', (function() {
+    aNode.addEventListener('change', () => {
       this.throttledUpdate(aKey, aNode.value);
-    }).bind(this));
+    });
     aNode.disabled = aKey in this.configs.$locked;
     this.addResetMethod(aKey, aNode);
     this.uiNodes[aKey] = this.uiNodes[aKey] || [];
@@ -155,50 +145,45 @@ Options.prototype = {
     };
   },
 
-  onReady : function()
-  {
+  onReady : async function() {
     document.removeEventListener('DOMContentLoaded', this.onReady);
 
     if (!this.configs || !this.configs.$loaded)
       throw new Error('you must give configs!');
 
     this.configs.$addObserver(this.onConfigChanged);
-    this.configs.$loaded
-      .then((function() {
-        Object.keys(this.configs.$default).forEach(function(aKey) {
-          var node = this.findUIForKey(aKey);
-          if (!node)
-            return;
-          switch (this.detectUIType(node))
-          {
-            case this.UI_TYPE_CHECKBOX:
-              this.bindToCheckbox(aKey, node);
-              break;
+    await this.configs.$loaded;
+    Object.keys(this.configs.$default).forEach(aKey => {
+      var node = this.findUIForKey(aKey);
+      if (!node)
+        return;
+      switch (this.detectUIType(node)) {
+        case this.UI_TYPE_CHECKBOX:
+          this.bindToCheckbox(aKey, node);
+          break;
 
-            case this.UI_TYPE_RADIO:
-              this.bindToRadio(aKey);
-              break;
+        case this.UI_TYPE_RADIO:
+          this.bindToRadio(aKey);
+          break;
 
-            case this.UI_TYPE_TEXT_FIELD:
-              this.bindToTextField(aKey, node);
-              break;
+        case this.UI_TYPE_TEXT_FIELD:
+          this.bindToTextField(aKey, node);
+          break;
 
-            case this.UI_TYPE_SELECTBOX:
-              this.bindToSelectBox(aKey, node);
-              break;
+        case this.UI_TYPE_SELECTBOX:
+          this.bindToSelectBox(aKey, node);
+          break;
 
-            case this.UI_MISSING:
-              return;
+        case this.UI_MISSING:
+          return;
 
-            default:
-              throw new Error('unknown type UI element for ' + aKey);
-          }
-        }, this);
-      }).bind(this));
+        default:
+          throw new Error('unknown type UI element for ' + aKey);
+      }
+    });
   },
 
-  onConfigChanged : function(aKey)
-  {
+  onConfigChanged : function(aKey) {
     var nodes = this.uiNodes[aKey];
     if (!nodes) // possibly radio
       nodes = this.uiNodes[aKey + '-' + configs[aKey]];
@@ -216,8 +201,7 @@ Options.prototype = {
     }
   },
 
-  buildUIForAllConfigs : function(aParent)
-  {
+  buildUIForAllConfigs : function(aParent) {
     var parent = aParent || document.body;
     var range = document.createRange();
     range.selectNodeContents(parent);
@@ -255,12 +239,12 @@ Options.prototype = {
       }
       var button = table.querySelector(`#allconfigs-reset-${key}`);
       button.addEventListener('click', () => {
-        input.$reset();
+        aInput.$reset();
       });
       button.addEventListener('keypress', (aEvent) => {
         if (aEvent.keyCode == aEvent.DOM_VK_ENTER ||
           aEvent.keyCode == aEvent.DOM_VK_RETURN)
-          input.$reset();
+          aInput.$reset();
       });
     });
   }
