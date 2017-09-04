@@ -94,6 +94,7 @@ Options.prototype = {
 			this.throttledUpdate(aKey, aNode.checked);
 		}).bind(this));
 		aNode.disabled = aKey in this.configs.$locked;
+		this.addResetMethod(aKey, aNode);
 		this.uiNodes[aKey] = this.uiNodes[aKey] || [];
 		this.uiNodes[aKey].push(aNode);
 	},
@@ -128,6 +129,7 @@ Options.prototype = {
 			this.throttledUpdate(aKey, aNode.value);
 		}).bind(this));
 		aNode.disabled = aKey in this.configs.$locked;
+		this.addResetMethod(aKey, aNode);
 		this.uiNodes[aKey] = this.uiNodes[aKey] || [];
 		this.uiNodes[aKey].push(aNode);
 	},
@@ -138,8 +140,19 @@ Options.prototype = {
 			this.throttledUpdate(aKey, aNode.value);
 		}).bind(this));
 		aNode.disabled = aKey in this.configs.$locked;
+		this.addResetMethod(aKey, aNode);
 		this.uiNodes[aKey] = this.uiNodes[aKey] || [];
 		this.uiNodes[aKey].push(aNode);
+	},
+	addResetMethod : function(aKey, aNode) {
+		aNode.$reset = () => {
+			var value = this.configs[aKey] =
+					this.configs.$default[aKey];
+			if (this.detectUIType(aNode) == this.UI_TYPE_CHECKBOX)
+				aNode.checked = value;
+			else
+				aNode.value = value;
+		};
 	},
 
 	onReady : function()
@@ -242,16 +255,12 @@ Options.prototype = {
 			}
 			var button = table.querySelector(`#allconfigs-reset-${key}`);
 			button.addEventListener('click', () => {
-				aInput.value =
-					this.configs[key] =
-						this.configs.$default[key];
+				input.$reset();
 			});
 			button.addEventListener('keypress', (aEvent) => {
 				if (aEvent.keyCode == aEvent.DOM_VK_ENTER ||
 					aEvent.keyCode == aEvent.DOM_VK_RETURN)
-					aInput.value =
-						this.configs[key] =
-							this.configs.$default[key];
+					input.$reset();
 			});
 		});
 	}
