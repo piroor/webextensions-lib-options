@@ -19,6 +19,7 @@ Options.prototype = {
 	UI_TYPE_TEXT_FIELD : 1 << 0,
 	UI_TYPE_CHECKBOX   : 1 << 1,
 	UI_TYPE_RADIO      : 1 << 2,
+	UI_TYPE_SELECTBOX  : 1 << 3,
 
 	findUIForKey : function(aKey)
 	{
@@ -36,6 +37,9 @@ Options.prototype = {
 
 		if (node.localName == 'textarea')
 			return this.UI_TYPE_TEXT_FIELD;
+
+		if (node.localName == 'select')
+			return this.UI_TYPE_SELECTBOX;
 
 		if (node.localName != 'input')
 			return this.UI_TYPE_UNKNOWN;
@@ -109,6 +113,16 @@ Options.prototype = {
 		node.disabled = aKey in this.configs.$locked;
 		this.uiNodes[aKey] = node;
 	},
+	bindToSelectBox : function(aKey)
+	{
+		var node = this.findUIForKey(aKey);
+		node.value = this.configs[aKey];
+		node.addEventListener('change', (function() {
+			this.throttledUpdate(aKey, node.value);
+		}).bind(this));
+		node.disabled = aKey in this.configs.$locked;
+		this.uiNodes[aKey] = node;
+	},
 
 	onReady : function()
 	{
@@ -133,6 +147,10 @@ Options.prototype = {
 
 						case this.UI_TYPE_TEXT_FIELD:
 							this.bindToTextField(aKey);
+							break;
+
+						case this.UI_TYPE_SELECTBOX:
+							this.bindToSelectBox(aKey);
 							break;
 
 						case this.UI_MISSING:
