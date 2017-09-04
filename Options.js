@@ -68,6 +68,22 @@ Options.prototype = {
 			clearTimeout(this.throttleTimers[aKey]);
 		this.throttleTimers[aKey] = setTimeout((function() {
 			delete this.throttleTimers[aKey];
+			switch (typeof this.configs.$default[aKey]) {
+				case 'string':
+					aValue = String(aValue);
+					break;
+				case 'number':
+					aValue = Number(aValue);
+					break;
+				case 'boolean':
+					if (typeof aValue == 'string')
+						aValue = aValue != 'false';
+					else
+						aValue = Boolean(aValue);
+					break;
+				default:
+					break;
+			}
 			this.configs[aKey] = aValue;
 		}).bind(this), 250);
 	},
