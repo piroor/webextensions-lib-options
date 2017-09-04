@@ -201,9 +201,58 @@ Options.prototype = {
 			}
 			node.disabled = this.configs.$locked[aKey];
 		}
-		else {
-			node.value = this.configs[aKey];
+	},
+
+	buildUIForAllConfigs : function(aParent)
+	{
+		var parent = aParent || document.body;
+		var range = document.createRange();
+		range.selectNodeContents(parent);
+		range.collapse(false);
+		var rows = [];
+		for (let key of Object.keys(this.configs.$default)) {
+			let value = this.configs.$default[key];
+			let type = typeof value == 'number' ? 'number' :
+						typeof value == 'boolean' ? 'checkbox' :
+						'text' ;
+			rows.push(`
+				<tr>
+					<td><label for="allconfigs-field-${key}">${key}</label></td>
+					<td><input id="allconfigs-field-${key}"
+					           type="${type}"></td>
+					<td><button id="allconfigs-reset-${key}">Reset</button></td>
+				</tr>
+			`);
 		}
-		node.disabled = this.configs.$locked[aKey];
+		var fragment = range.createContextualFragment(`<table><tbody>${rows.join('')}</tbody></table>`);
+		range.insertNode(fragment);
+		range.detach();
+		var table = parent.lastChild;
+		Array.slice(table.querySelectorAll('input')).forEach(aInput => {
+			var key = aInput.id.replace(/^allconfigs-field-/, '');
+			switch (this.detectUIType(aInput))
+			{
+				case this.UI_TYPE_CHECKBOX:
+					this.bindToCheckbox(key, aInput);
+					break;
+
+				case this.UI_TYPE_TEXT_FIELD:
+					this.bindToTextField(key, aInput);
+					break;
+			}
+			var button = table.querySelector(`#allconfigs-reset-${key}`);
+			button.addEventListener('click', () => {
+				aInput.value =
+					this.configs[key] =
+						this.configs.$default[key];
+			});
+			button.addEventListener('keypress', (aEvent) => {
+				if (aEvent.keyCode == aEvent.DOM_VK_ENTER ||
+					aEvent.keyCode == aEvent.DOM_VK_RETURN)
+					aInput.value =
+						this.configs[key] =
+							this.configs.$default[key];
+			});
+		});
 	}
 };
