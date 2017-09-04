@@ -29,22 +29,21 @@ Options.prototype = {
 		].join(','));
 	},
 
-	detectUIType : function(aKey)
+	detectUIType : function(aNode)
 	{
-		var node = this.findUIForKey(aKey);
-		if (!node)
+		if (!aNode)
 			return this.UI_MISSING;
 
-		if (node.localName == 'textarea')
+		if (aNode.localName == 'textarea')
 			return this.UI_TYPE_TEXT_FIELD;
 
-		if (node.localName == 'select')
+		if (aNode.localName == 'select')
 			return this.UI_TYPE_SELECTBOX;
 
-		if (node.localName != 'input')
+		if (aNode.localName != 'input')
 			return this.UI_TYPE_UNKNOWN;
 
-		switch (node.type)
+		switch (aNode.type)
 		{
 			case 'text':
 			case 'password':
@@ -88,15 +87,15 @@ Options.prototype = {
 		}).bind(this), 250);
 	},
 
-	bindToCheckbox : function(aKey)
+	bindToCheckbox : function(aKey, aNode)
 	{
-		var node = this.findUIForKey(aKey);
-		node.checked = this.configs[aKey];
-		node.addEventListener('change', (function() {
-			this.throttledUpdate(aKey, node.checked);
+		aNode.checked = this.configs[aKey];
+		aNode.addEventListener('change', (function() {
+			this.throttledUpdate(aKey, aNode.checked);
 		}).bind(this));
-		node.disabled = aKey in this.configs.$locked;
-		this.uiNodes[aKey] = node;
+		aNode.disabled = aKey in this.configs.$locked;
+		this.uiNodes[aKey] = this.uiNodes[aKey] || [];
+		this.uiNodes[aKey].push(aNode);
 	},
 	bindToRadio : function(aKey)
 	{
@@ -106,38 +105,41 @@ Options.prototype = {
 			aRadio.addEventListener('change', (function() {
 				if (!activated)
 					return;
-				if (this.configs[aKey] != aRadio.value)
+				var stringifiedValue = this.configs[aKey];
+				if (stringifiedValue != aRadio.value)
 					this.throttledUpdate(aKey, aRadio.value);
 			}).bind(this));
 			aRadio.disabled = aKey in this.configs.$locked;
-			this.uiNodes[aKey + '-' + aRadio.value] = aRadio;
+			var key = aKey + '-' + aRadio.value;
+			this.uiNodes[key] = this.uiNodes[key] || [];
+			this.uiNodes[key].push(aRadio);
 		}).bind(this));
-		var chosen = this.uiNodes[aKey + '-' + this.configs[aKey]];
+		var chosen = this.uiNodes[aKey + '-' + this.configs[aKey]][0];
 		if (chosen)
 			chosen.checked = true;
 		setTimeout(function() {
 			activated = true;
 		}, 0);
 	},
-	bindToTextField : function(aKey)
+	bindToTextField : function(aKey, aNode)
 	{
-		var node = this.findUIForKey(aKey);
-		node.value = this.configs[aKey];
-		node.addEventListener('input', (function() {
-			this.throttledUpdate(aKey, node.value);
+		aNode.value = this.configs[aKey];
+		aNode.addEventListener('input', (function() {
+			this.throttledUpdate(aKey, aNode.value);
 		}).bind(this));
-		node.disabled = aKey in this.configs.$locked;
-		this.uiNodes[aKey] = node;
+		aNode.disabled = aKey in this.configs.$locked;
+		this.uiNodes[aKey] = this.uiNodes[aKey] || [];
+		this.uiNodes[aKey].push(aNode);
 	},
-	bindToSelectBox : function(aKey)
+	bindToSelectBox : function(aKey, aNode)
 	{
-		var node = this.findUIForKey(aKey);
-		node.value = this.configs[aKey];
-		node.addEventListener('change', (function() {
-			this.throttledUpdate(aKey, node.value);
+		aNode.value = this.configs[aKey];
+		aNode.addEventListener('change', (function() {
+			this.throttledUpdate(aKey, aNode.value);
 		}).bind(this));
-		node.disabled = aKey in this.configs.$locked;
-		this.uiNodes[aKey] = node;
+		aNode.disabled = aKey in this.configs.$locked;
+		this.uiNodes[aKey] = this.uiNodes[aKey] || [];
+		this.uiNodes[aKey].push(aNode);
 	},
 
 	onReady : function()
@@ -151,10 +153,13 @@ Options.prototype = {
 		this.configs.$loaded
 			.then((function() {
 				Object.keys(this.configs.$default).forEach(function(aKey) {
-					switch (this.detectUIType(aKey))
+					var node = this.findUIForKey(aKey);
+					if (!node)
+						return;
+					switch (this.detectUIType(node))
 					{
 						case this.UI_TYPE_CHECKBOX:
-							this.bindToCheckbox(aKey);
+							this.bindToCheckbox(aKey, node);
 							break;
 
 						case this.UI_TYPE_RADIO:
@@ -162,11 +167,11 @@ Options.prototype = {
 							break;
 
 						case this.UI_TYPE_TEXT_FIELD:
-							this.bindToTextField(aKey);
+							this.bindToTextField(aKey, node);
 							break;
 
 						case this.UI_TYPE_SELECTBOX:
-							this.bindToSelectBox(aKey);
+							this.bindToSelectBox(aKey, node);
 							break;
 
 						case this.UI_MISSING:
@@ -179,15 +184,22 @@ Options.prototype = {
 			}).bind(this));
 	},
 
-	onConfigChanged : function(aKey) {
-		var node = this.uiNodes[aKey];
-		if (!node) // possibly radio
-			node = this.uiNodes[aKey + '-' + configs[aKey]];
-		if (!node)
+	onConfigChanged : function(aKey)
+	{
+		var nodes = this.uiNodes[aKey];
+		if (!nodes) // possibly radio
+			nodes = this.uiNodes[aKey + '-' + configs[aKey]];
+		if (!nodes || !nodes.length)
 			return;
 
-		if ('checked' in node) {
-			node.checked = !!this.configs[aKey];
+		for (let node of nodes) {
+			if ('checked' in node) {
+				node.checked = !!this.configs[aKey];
+			}
+			else {
+				node.value = this.configs[aKey];
+			}
+			node.disabled = this.configs.$locked[aKey];
 		}
 		else {
 			node.value = this.configs[aKey];
