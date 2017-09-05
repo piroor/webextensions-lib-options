@@ -120,9 +120,9 @@ Options.prototype = {
       this.uiNodes[key] = this.uiNodes[key] || [];
       this.uiNodes[key].push(aRadio);
     });
-    var chosen = this.uiNodes[aKey + '-' + this.configs[aKey]][0];
-    if (chosen)
-      chosen.checked = true;
+    var chosens = this.uiNodes[aKey + '-' + this.configs[aKey]];
+    if (chosens && chosens.length > 0)
+      chosens.map(chosen => { chosen.checked = true; });
     setTimeout(() => {
       activated = true;
     }, 0);
