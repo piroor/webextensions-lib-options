@@ -88,7 +88,7 @@ Options.prototype = {
   },
 
   configValueToUIValue : function(aValue) {
-    if (typeof aValeu == 'object')
+    if (typeof aValue == 'object')
       return JSON.stringify(aValue);
     else
       return aValue;
