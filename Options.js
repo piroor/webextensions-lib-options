@@ -212,7 +212,7 @@ Options.prototype = {
         node.checked = !!this.configs[aKey];
       }
       else {
-        node.value = this.configs[aKey];
+        node.value = this.configValueToUIValue(this.configs[aKey]);
       }
       node.disabled = this.configs.$locked[aKey];
     }
