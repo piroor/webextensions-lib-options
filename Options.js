@@ -61,28 +61,41 @@ Options.prototype = {
       clearTimeout(this.throttleTimers[aKey]);
     this.throttleTimers[aKey] = setTimeout(() => {
       delete this.throttleTimers[aKey];
-      switch (typeof this.configs.$default[aKey]) {
-        case 'string':
-          aValue = String(aValue);
-          break;
-        case 'number':
-          aValue = Number(aValue);
-          break;
-        case 'boolean':
-          if (typeof aValue == 'string')
-            aValue = aValue != 'false';
-          else
-            aValue = Boolean(aValue);
-          break;
-        default:
-          break;
-      }
-      this.configs[aKey] = aValue;
+      this.configs[aKey] = serializeValue(aKey, aValue);
     }, 250);
   },
 
+  serializeValue : function(aKey, aValue) {
+    switch (typeof this.configs.$default[aKey]) {
+      case 'string':
+        return String(aValue);
+
+      case 'number':
+        return Number(aValue);
+
+      case 'boolean':
+        if (typeof aValue == 'string')
+          return aValue != 'false';
+        else
+          return Boolean(aValue);
+
+      default: // object
+        if (typeof aValue == 'string')
+          return JSON.parse(aValue);
+        else
+          return aValue;
+    }
+  },
+
+  deserializeValue : function(aValue) {
+    if (typeof aValeu == 'object')
+      return JSON.stringify(aValue);
+    else
+      return aValue;
+  },
+
   bindToCheckbox : function(aKey, aNode) {
-    aNode.checked = this.configs[aKey];
+    aNode.checked = this.deserializeValue(this.configs[aKey]);
     aNode.addEventListener('change', () => {
       this.throttledUpdate(aKey, aNode.checked);
     });
@@ -115,7 +128,7 @@ Options.prototype = {
     }, 0);
   },
   bindToTextField : function(aKey, aNode) {
-    aNode.value = this.configs[aKey];
+    aNode.value = this.deserializeValue(this.configs[aKey]);
     aNode.addEventListener('input', () => {
       this.throttledUpdate(aKey, aNode.value);
     });
@@ -125,7 +138,7 @@ Options.prototype = {
     this.uiNodes[aKey].push(aNode);
   },
   bindToSelectBox : function(aKey, aNode) {
-    aNode.value = this.configs[aKey];
+    aNode.value = this.deserializeValue(this.configs[aKey]);
     aNode.addEventListener('change', () => {
       this.throttledUpdate(aKey, aNode.value);
     });
