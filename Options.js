@@ -61,7 +61,7 @@ Options.prototype = {
       clearTimeout(this.throttleTimers[aKey]);
     this.throttleTimers[aKey] = setTimeout(() => {
       delete this.throttleTimers[aKey];
-      this.configs[aKey] = UIValueToConfigValue(aKey, aValue);
+      this.configs[aKey] = this.UIValueToConfigValue(aKey, aValue);
     }, 250);
   },
 
