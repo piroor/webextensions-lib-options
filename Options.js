@@ -61,11 +61,11 @@ Options.prototype = {
       clearTimeout(this.throttleTimers[aKey]);
     this.throttleTimers[aKey] = setTimeout(() => {
       delete this.throttleTimers[aKey];
-      this.configs[aKey] = serializeValue(aKey, aValue);
+      this.configs[aKey] = UIValueToConfigValue(aKey, aValue);
     }, 250);
   },
 
-  serializeValue : function(aKey, aValue) {
+  UIValueToConfigValue : function(aKey, aValue) {
     switch (typeof this.configs.$default[aKey]) {
       case 'string':
         return String(aValue);
@@ -87,7 +87,7 @@ Options.prototype = {
     }
   },
 
-  deserializeValue : function(aValue) {
+  configValueToUIValue : function(aValue) {
     if (typeof aValeu == 'object')
       return JSON.stringify(aValue);
     else
@@ -95,7 +95,7 @@ Options.prototype = {
   },
 
   bindToCheckbox : function(aKey, aNode) {
-    aNode.checked = this.deserializeValue(this.configs[aKey]);
+    aNode.checked = this.configValueToUIValue(this.configs[aKey]);
     aNode.addEventListener('change', () => {
       this.throttledUpdate(aKey, aNode.checked);
     });
@@ -128,7 +128,7 @@ Options.prototype = {
     }, 0);
   },
   bindToTextField : function(aKey, aNode) {
-    aNode.value = this.deserializeValue(this.configs[aKey]);
+    aNode.value = this.configValueToUIValue(this.configs[aKey]);
     aNode.addEventListener('input', () => {
       this.throttledUpdate(aKey, aNode.value);
     });
@@ -138,7 +138,7 @@ Options.prototype = {
     this.uiNodes[aKey].push(aNode);
   },
   bindToSelectBox : function(aKey, aNode) {
-    aNode.value = this.deserializeValue(this.configs[aKey]);
+    aNode.value = this.configValueToUIValue(this.configs[aKey]);
     aNode.addEventListener('change', () => {
       this.throttledUpdate(aKey, aNode.value);
     });
