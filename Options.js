@@ -81,15 +81,19 @@ Options.prototype = {
 
       default: // object
         if (typeof aValue == 'string')
-          return JSON.parse(aValue);
+          return JSON.parse(aValue || 'null');
         else
           return aValue;
     }
   },
 
   configValueToUIValue : function(aValue) {
-    if (typeof aValue == 'object')
-      return JSON.stringify(aValue);
+    if (typeof aValue == 'object') {
+      let value = JSON.stringify(aValue);
+      if (value == 'null')
+        value = '';
+      return value;
+    }
     else
       return aValue;
   },
