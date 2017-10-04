@@ -224,7 +224,7 @@ Options.prototype = {
     range.selectNodeContents(parent);
     range.collapse(false);
     var rows = [];
-    for (let key of Object.keys(this.configs.$default)) {
+    for (let key of Object.keys(this.configs.$default).sort()) {
       let value = this.configs.$default[key];
       let type = typeof value == 'number' ? 'number' :
             typeof value == 'boolean' ? 'checkbox' :
