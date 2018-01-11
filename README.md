@@ -56,4 +56,4 @@ Load the file `Options.js` from your options page:
     <li><label><input type="radio" name="mode" value="medium"> Agressive</label></li></ul>
 ```
 
-Then the `Options` detects an element which has its own ID same to each given config (defined with [`Cofnigs`](https://github.com/piroor/webextensions-lib-configs)), and bind the config to the element. The element is initialized with the current value. If you change the state of the element itself, then it will be synchronized to the value of the related config.
+Then the `Options` detects an element which has its own ID same to each given config (defined with [`Configs`](https://github.com/piroor/webextensions-lib-configs)), and bind the config to the element. The element is initialized with the current value. If you change the state of the element itself, then it will be synchronized to the value of the related config.
