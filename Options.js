@@ -56,12 +56,16 @@ Options.prototype = {
   },
 
   throttleTimers : {},
-  throttledUpdate : function(aKey, aValue) {
+  throttledUpdate : function(aKey, aUINode, aValue) {
     if (this.throttleTimers[aKey])
       clearTimeout(this.throttleTimers[aKey]);
+    aUINode.dataset.configValueUpdating = true;
     this.throttleTimers[aKey] = setTimeout(() => {
       delete this.throttleTimers[aKey];
       this.configs[aKey] = this.UIValueToConfigValue(aKey, aValue);
+      setTimeout(() => {
+        aUINode.dataset.configValueUpdating = false;
+      }, 50);
     }, 250);
   },
 
@@ -101,7 +105,7 @@ Options.prototype = {
   bindToCheckbox : function(aKey, aNode) {
     aNode.checked = this.configValueToUIValue(this.configs[aKey]);
     aNode.addEventListener('change', () => {
-      this.throttledUpdate(aKey, aNode.checked);
+      this.throttledUpdate(aKey, aNode, aNode.checked);
     });
     aNode.disabled = aKey in this.configs.$locked;
     this.addResetMethod(aKey, aNode);
@@ -117,7 +121,7 @@ Options.prototype = {
           return;
         var stringifiedValue = this.configs[aKey];
         if (stringifiedValue != aRadio.value)
-          this.throttledUpdate(aKey, aRadio.value);
+          this.throttledUpdate(aKey, aRadio, aRadio.value);
       });
       aRadio.disabled = aKey in this.configs.$locked;
       var key = aKey + '-' + aRadio.value;
@@ -134,7 +138,7 @@ Options.prototype = {
   bindToTextField : function(aKey, aNode) {
     aNode.value = this.configValueToUIValue(this.configs[aKey]);
     aNode.addEventListener('input', () => {
-      this.throttledUpdate(aKey, aNode.value);
+      this.throttledUpdate(aKey, aNode, aNode.value);
     });
     aNode.disabled = aKey in this.configs.$locked;
     this.addResetMethod(aKey, aNode);
@@ -144,7 +148,7 @@ Options.prototype = {
   bindToSelectBox : function(aKey, aNode) {
     aNode.value = this.configValueToUIValue(this.configs[aKey]);
     aNode.addEventListener('change', () => {
-      this.throttledUpdate(aKey, aNode.value);
+      this.throttledUpdate(aKey, aNode, aNode.value);
     });
     aNode.disabled = aKey in this.configs.$locked;
     this.addResetMethod(aKey, aNode);
@@ -208,6 +212,8 @@ Options.prototype = {
       return;
 
     for (let node of nodes) {
+      if (node.dataset.configValueUpdating)
+        return;
       if ('checked' in node) {
         node.checked = !!this.configs[aKey];
       }
