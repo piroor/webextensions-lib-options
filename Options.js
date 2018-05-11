@@ -264,9 +264,8 @@ Options.prototype = {
       button.addEventListener('click', () => {
         aInput.$reset();
       });
-      button.addEventListener('keypress', (aEvent) => {
-        if (aEvent.keyCode == aEvent.DOM_VK_ENTER ||
-          aEvent.keyCode == aEvent.DOM_VK_RETURN)
+      button.addEventListener('keyup', (aEvent) => {
+        if (aEvent.key == 'Enter')
           aInput.$reset();
       });
     });
