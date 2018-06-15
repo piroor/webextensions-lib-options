@@ -119,9 +119,9 @@ class Options {
       });
       aRadio.disabled = this.configs.$isLocked(aKey);
       const key = aKey + '-' + aRadio.value;
-      const nodes = this.uiNodes.get(aKey) || [];
-      nodes.push(aNode);
-      this.uiNodes.set(aKey, nodes);
+      const nodes = this.uiNodes.get(key) || [];
+      nodes.push(aRadio);
+      this.uiNodes.set(key, nodes);
     });
     const chosens = this.uiNodes.get(aKey + '-' + this.configs[aKey]);
     if (chosens && chosens.length > 0)
