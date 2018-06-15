@@ -6,14 +6,14 @@
 
 class Options {
   constructor(aConfigs) {
-  this.configs = aConfigs;
-  this.uiNodes = {};
-  this.throttleTimers = {};
+    this.configs = aConfigs;
+    this.uiNodes = {};
+    this.throttleTimers = {};
 
-  this.onReady = this.onReady.bind(this);
-  this.onConfigChanged = this.onConfigChanged.bind(this)
-  document.addEventListener('DOMContentLoaded', this.onReady);
-}
+    this.onReady = this.onReady.bind(this);
+    this.onConfigChanged = this.onConfigChanged.bind(this)
+    document.addEventListener('DOMContentLoaded', this.onReady);
+  }
 
   findUIForKey(aKey) {
     return document.querySelector(`[name="${aKey}"], #${aKey}`);
