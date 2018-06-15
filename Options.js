@@ -107,7 +107,7 @@ Options.prototype = {
     aNode.addEventListener('change', () => {
       this.throttledUpdate(aKey, aNode, aNode.checked);
     });
-    aNode.disabled = aKey in this.configs.$locked;
+    aNode.disabled = this.configs.$isLocked(aKey);
     this.addResetMethod(aKey, aNode);
     this.uiNodes[aKey] = this.uiNodes[aKey] || [];
     this.uiNodes[aKey].push(aNode);
