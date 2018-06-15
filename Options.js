@@ -113,22 +113,22 @@ Options.prototype = {
     this.uiNodes[aKey].push(aNode);
   },
   bindToRadio : function(aKey) {
-    var radios = document.querySelectorAll('input[name="' + aKey + '"]');
-    var activated = false;
+    const radios = document.querySelectorAll('input[name="' + aKey + '"]');
+    let activated = false;
     Array.slice(radios).forEach((aRadio) => {
       aRadio.addEventListener('change', () => {
         if (!activated)
           return;
-        var stringifiedValue = this.configs[aKey];
+        const stringifiedValue = this.configs[aKey];
         if (stringifiedValue != aRadio.value)
           this.throttledUpdate(aKey, aRadio, aRadio.value);
       });
       aRadio.disabled = this.configs.$isLocked(aKey);
-      var key = aKey + '-' + aRadio.value;
+      const key = aKey + '-' + aRadio.value;
       this.uiNodes[key] = this.uiNodes[key] || [];
       this.uiNodes[key].push(aRadio);
     });
-    var chosens = this.uiNodes[aKey + '-' + this.configs[aKey]];
+    const chosens = this.uiNodes[aKey + '-' + this.configs[aKey]];
     if (chosens && chosens.length > 0)
       chosens.map(chosen => { chosen.checked = true; });
     setTimeout(() => {
@@ -157,7 +157,7 @@ Options.prototype = {
   },
   addResetMethod : function(aKey, aNode) {
     aNode.$reset = () => {
-      var value = this.configs[aKey] =
+      const value = this.configs[aKey] =
           this.configs.$default[aKey];
       if (this.detectUIType(aNode) == this.UI_TYPE_CHECKBOX)
         aNode.checked = value;
@@ -175,7 +175,7 @@ Options.prototype = {
     this.configs.$addObserver(this.onConfigChanged);
     await this.configs.$loaded;
     Object.keys(this.configs.$default).forEach(aKey => {
-      var node = this.findUIForKey(aKey);
+      const node = this.findUIForKey(aKey);
       if (!node)
         return;
       switch (this.detectUIType(node)) {
@@ -205,13 +205,13 @@ Options.prototype = {
   },
 
   onConfigChanged : function(aKey) {
-    var nodes = this.uiNodes[aKey];
+    let nodes = this.uiNodes[aKey];
     if (!nodes) // possibly radio
-      nodes = this.uiNodes[aKey + '-' + configs[aKey]];
+      nodes = this.uiNodes[aKey + '-' + this.configs[aKey]];
     if (!nodes || !nodes.length)
       return;
 
-    for (let node of nodes) {
+    for (const node of nodes) {
       if (node.dataset.configValueUpdating)
         return;
       if ('checked' in node) {
@@ -225,16 +225,16 @@ Options.prototype = {
   },
 
   buildUIForAllConfigs : function(aParent) {
-    var parent = aParent || document.body;
-    var range = document.createRange();
+    const parent = aParent || document.body;
+    const range = document.createRange();
     range.selectNodeContents(parent);
     range.collapse(false);
-    var rows = [];
-    for (let key of Object.keys(this.configs.$default).sort()) {
-      let value = this.configs.$default[key];
-      let type = typeof value == 'number' ? 'number' :
-            typeof value == 'boolean' ? 'checkbox' :
-            'text' ;
+    const rows = [];
+    for (const key of Object.keys(this.configs.$default).sort()) {
+      const value = this.configs.$default[key];
+      const type = typeof value == 'number' ? 'number' :
+        typeof value == 'boolean' ? 'checkbox' :
+          'text' ;
       rows.push(`
         <tr>
           <td><label for="allconfigs-field-${key}">${key}</label></td>
@@ -244,12 +244,12 @@ Options.prototype = {
         </tr>
       `);
     }
-    var fragment = range.createContextualFragment(`<table><tbody>${rows.join('')}</tbody></table>`);
+    const fragment = range.createContextualFragment(`<table><tbody>${rows.join('')}</tbody></table>`);
     range.insertNode(fragment);
     range.detach();
-    var table = parent.lastChild;
+    const table = parent.lastChild;
     Array.slice(table.querySelectorAll('input')).forEach(aInput => {
-      var key = aInput.id.replace(/^allconfigs-field-/, '');
+      const key = aInput.id.replace(/^allconfigs-field-/, '');
       switch (this.detectUIType(aInput))
       {
         case this.UI_TYPE_CHECKBOX:
@@ -260,7 +260,7 @@ Options.prototype = {
           this.bindToTextField(key, aInput);
           break;
       }
-      var button = table.querySelector(`#allconfigs-reset-${key}`);
+      const button = table.querySelector(`#allconfigs-reset-${key}`);
       button.addEventListener('click', () => {
         aInput.$reset();
       });
