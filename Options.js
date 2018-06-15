@@ -4,28 +4,22 @@
    http://github.com/piroor/webextensions-lib-options
 */
 
-function Options(aConfigs) {
+class Options {
+  constructor(aConfigs) {
   this.configs = aConfigs;
   this.uiNodes = {};
+  this.throttleTimers = {};
 
   this.onReady = this.onReady.bind(this);
   this.onConfigChanged = this.onConfigChanged.bind(this)
   document.addEventListener('DOMContentLoaded', this.onReady);
 }
-Options.prototype = {
-  configs : null,
 
-  UI_TYPE_UNKNOWN    : 0,
-  UI_TYPE_TEXT_FIELD : 1 << 0,
-  UI_TYPE_CHECKBOX   : 1 << 1,
-  UI_TYPE_RADIO      : 1 << 2,
-  UI_TYPE_SELECTBOX  : 1 << 3,
-
-  findUIForKey : function(aKey) {
+  findUIForKey(aKey) {
     return document.querySelector(`[name="${aKey}"], #${aKey}`);
-  },
+  }
 
-  detectUIType : function(aNode) {
+  detectUIType(aNode) {
     if (!aNode)
       return this.UI_MISSING;
 
@@ -53,10 +47,9 @@ Options.prototype = {
       default:
         return this.UI_TYPE_UNKNOWN;
     }
-  },
+  }
 
-  throttleTimers : {},
-  throttledUpdate : function(aKey, aUINode, aValue) {
+  throttledUpdate(aKey, aUINode, aValue) {
     if (this.throttleTimers[aKey])
       clearTimeout(this.throttleTimers[aKey]);
     aUINode.dataset.configValueUpdating = true;
@@ -67,9 +60,9 @@ Options.prototype = {
         aUINode.dataset.configValueUpdating = false;
       }, 50);
     }, 250);
-  },
+  }
 
-  UIValueToConfigValue : function(aKey, aValue) {
+  UIValueToConfigValue(aKey, aValue) {
     switch (typeof this.configs.$default[aKey]) {
       case 'string':
         return String(aValue);
@@ -89,9 +82,9 @@ Options.prototype = {
         else
           return aValue;
     }
-  },
+  }
 
-  configValueToUIValue : function(aValue) {
+  configValueToUIValue(aValue) {
     if (typeof aValue == 'object') {
       let value = JSON.stringify(aValue);
       if (value == 'null')
@@ -100,9 +93,9 @@ Options.prototype = {
     }
     else
       return aValue;
-  },
+  }
 
-  bindToCheckbox : function(aKey, aNode) {
+  bindToCheckbox(aKey, aNode) {
     aNode.checked = this.configValueToUIValue(this.configs[aKey]);
     aNode.addEventListener('change', () => {
       this.throttledUpdate(aKey, aNode, aNode.checked);
@@ -111,8 +104,8 @@ Options.prototype = {
     this.addResetMethod(aKey, aNode);
     this.uiNodes[aKey] = this.uiNodes[aKey] || [];
     this.uiNodes[aKey].push(aNode);
-  },
-  bindToRadio : function(aKey) {
+  }
+  bindToRadio(aKey) {
     const radios = document.querySelectorAll('input[name="' + aKey + '"]');
     let activated = false;
     Array.slice(radios).forEach((aRadio) => {
@@ -134,8 +127,8 @@ Options.prototype = {
     setTimeout(() => {
       activated = true;
     }, 0);
-  },
-  bindToTextField : function(aKey, aNode) {
+  }
+  bindToTextField(aKey, aNode) {
     aNode.value = this.configValueToUIValue(this.configs[aKey]);
     aNode.addEventListener('input', () => {
       this.throttledUpdate(aKey, aNode, aNode.value);
@@ -144,8 +137,8 @@ Options.prototype = {
     this.addResetMethod(aKey, aNode);
     this.uiNodes[aKey] = this.uiNodes[aKey] || [];
     this.uiNodes[aKey].push(aNode);
-  },
-  bindToSelectBox : function(aKey, aNode) {
+  }
+  bindToSelectBox(aKey, aNode) {
     aNode.value = this.configValueToUIValue(this.configs[aKey]);
     aNode.addEventListener('change', () => {
       this.throttledUpdate(aKey, aNode, aNode.value);
@@ -154,8 +147,8 @@ Options.prototype = {
     this.addResetMethod(aKey, aNode);
     this.uiNodes[aKey] = this.uiNodes[aKey] || [];
     this.uiNodes[aKey].push(aNode);
-  },
-  addResetMethod : function(aKey, aNode) {
+  }
+  addResetMethod(aKey, aNode) {
     aNode.$reset = () => {
       const value = this.configs[aKey] =
           this.configs.$default[aKey];
@@ -164,9 +157,9 @@ Options.prototype = {
       else
         aNode.value = value;
     };
-  },
+  }
 
-  onReady : async function() {
+  async onReady() {
     document.removeEventListener('DOMContentLoaded', this.onReady);
 
     if (!this.configs || !this.configs.$loaded)
@@ -202,9 +195,9 @@ Options.prototype = {
           throw new Error('unknown type UI element for ' + aKey);
       }
     });
-  },
+  }
 
-  onConfigChanged : function(aKey) {
+  onConfigChanged(aKey) {
     let nodes = this.uiNodes[aKey];
     if (!nodes) // possibly radio
       nodes = this.uiNodes[aKey + '-' + this.configs[aKey]];
@@ -222,9 +215,9 @@ Options.prototype = {
       }
       node.disabled = this.configs.$isLocked(aKey);
     }
-  },
+  }
 
-  buildUIForAllConfigs : function(aParent) {
+  buildUIForAllConfigs(aParent) {
     const parent = aParent || document.body;
     const range = document.createRange();
     range.selectNodeContents(parent);
@@ -271,3 +264,10 @@ Options.prototype = {
     });
   }
 };
+
+Options.prototype.UI_TYPE_UNKNOWN    = 0;
+Options.prototype.UI_TYPE_TEXT_FIELD = 1 << 0;
+Options.prototype.UI_TYPE_CHECKBOX   = 1 << 1;
+Options.prototype.UI_TYPE_RADIO      = 1 << 2;
+Options.prototype.UI_TYPE_SELECTBOX  = 1 << 3;
+
