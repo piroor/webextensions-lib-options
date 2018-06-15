@@ -123,7 +123,7 @@ Options.prototype = {
         if (stringifiedValue != aRadio.value)
           this.throttledUpdate(aKey, aRadio, aRadio.value);
       });
-      aRadio.disabled = aKey in this.configs.$locked;
+      aRadio.disabled = this.configs.$isLocked(aKey);
       var key = aKey + '-' + aRadio.value;
       this.uiNodes[key] = this.uiNodes[key] || [];
       this.uiNodes[key].push(aRadio);
@@ -140,7 +140,7 @@ Options.prototype = {
     aNode.addEventListener('input', () => {
       this.throttledUpdate(aKey, aNode, aNode.value);
     });
-    aNode.disabled = aKey in this.configs.$locked;
+    aNode.disabled = this.configs.$isLocked(aKey);
     this.addResetMethod(aKey, aNode);
     this.uiNodes[aKey] = this.uiNodes[aKey] || [];
     this.uiNodes[aKey].push(aNode);
@@ -150,7 +150,7 @@ Options.prototype = {
     aNode.addEventListener('change', () => {
       this.throttledUpdate(aKey, aNode, aNode.value);
     });
-    aNode.disabled = aKey in this.configs.$locked;
+    aNode.disabled = this.configs.$isLocked(aKey);
     this.addResetMethod(aKey, aNode);
     this.uiNodes[aKey] = this.uiNodes[aKey] || [];
     this.uiNodes[aKey].push(aNode);
@@ -220,7 +220,7 @@ Options.prototype = {
       else {
         node.value = this.configValueToUIValue(this.configs[aKey]);
       }
-      node.disabled = this.configs.$locked[aKey];
+      node.disabled = this.configs.$isLocked(aKey);
     }
   },
 
