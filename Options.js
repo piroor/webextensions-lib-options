@@ -7,8 +7,8 @@
 class Options {
   constructor(aConfigs) {
     this.configs = aConfigs;
-    this.uiNodes = {};
-    this.throttleTimers = {};
+    this.uiNodes = new Map();
+    this.throttleTimers = new Map();
 
     this.onReady = this.onReady.bind(this);
     this.onConfigChanged = this.onConfigChanged.bind(this)
@@ -50,16 +50,16 @@ class Options {
   }
 
   throttledUpdate(aKey, aUINode, aValue) {
-    if (this.throttleTimers[aKey])
-      clearTimeout(this.throttleTimers[aKey]);
+    if (this.throttleTimers.has(aKey))
+      clearTimeout(this.throttleTimers.get(aKey));
     aUINode.dataset.configValueUpdating = true;
-    this.throttleTimers[aKey] = setTimeout(() => {
-      delete this.throttleTimers[aKey];
+    this.throttleTimers.set(aKey, setTimeout(() => {
+      this.throttleTimers.delete(aKey);
       this.configs[aKey] = this.UIValueToConfigValue(aKey, aValue);
       setTimeout(() => {
         aUINode.dataset.configValueUpdating = false;
       }, 50);
-    }, 250);
+    }, 250));
   }
 
   UIValueToConfigValue(aKey, aValue) {
@@ -102,8 +102,9 @@ class Options {
     });
     aNode.disabled = this.configs.$isLocked(aKey);
     this.addResetMethod(aKey, aNode);
-    this.uiNodes[aKey] = this.uiNodes[aKey] || [];
-    this.uiNodes[aKey].push(aNode);
+    const nodes = this.uiNodes.get(aKey) || [];
+    nodes.push(aNode);
+    this.uiNodes.set(aKey, nodes);
   }
   bindToRadio(aKey) {
     const radios = document.querySelectorAll('input[name="' + aKey + '"]');
@@ -118,10 +119,11 @@ class Options {
       });
       aRadio.disabled = this.configs.$isLocked(aKey);
       const key = aKey + '-' + aRadio.value;
-      this.uiNodes[key] = this.uiNodes[key] || [];
-      this.uiNodes[key].push(aRadio);
+      const nodes = this.uiNodes.get(aKey) || [];
+      nodes.push(aNode);
+      this.uiNodes.set(aKey, nodes);
     });
-    const chosens = this.uiNodes[aKey + '-' + this.configs[aKey]];
+    const chosens = this.uiNodes.get(aKey + '-' + this.configs[aKey]);
     if (chosens && chosens.length > 0)
       chosens.map(chosen => { chosen.checked = true; });
     setTimeout(() => {
@@ -135,8 +137,9 @@ class Options {
     });
     aNode.disabled = this.configs.$isLocked(aKey);
     this.addResetMethod(aKey, aNode);
-    this.uiNodes[aKey] = this.uiNodes[aKey] || [];
-    this.uiNodes[aKey].push(aNode);
+    const nodes = this.uiNodes.get(aKey) || [];
+    nodes.push(aNode);
+    this.uiNodes.set(aKey, nodes);
   }
   bindToSelectBox(aKey, aNode) {
     aNode.value = this.configValueToUIValue(this.configs[aKey]);
@@ -145,8 +148,9 @@ class Options {
     });
     aNode.disabled = this.configs.$isLocked(aKey);
     this.addResetMethod(aKey, aNode);
-    this.uiNodes[aKey] = this.uiNodes[aKey] || [];
-    this.uiNodes[aKey].push(aNode);
+    const nodes = this.uiNodes.get(aKey) || [];
+    nodes.push(aNode);
+    this.uiNodes.set(aKey, nodes);
   }
   addResetMethod(aKey, aNode) {
     aNode.$reset = () => {
@@ -198,9 +202,9 @@ class Options {
   }
 
   onConfigChanged(aKey) {
-    let nodes = this.uiNodes[aKey];
+    let nodes = this.uiNodes.get(aKey);
     if (!nodes) // possibly radio
-      nodes = this.uiNodes[aKey + '-' + this.configs[aKey]];
+      nodes = this.uiNodes.get(aKey + '-' + this.configs[aKey]);
     if (!nodes || !nodes.length)
       return;
 
