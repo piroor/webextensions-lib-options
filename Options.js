@@ -36,6 +36,7 @@ class Options {
       case 'text':
       case 'password':
       case 'number':
+      case 'color':
         return this.UI_TYPE_TEXT_FIELD;
 
       case 'checkbox':
