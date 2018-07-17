@@ -37,6 +37,7 @@ Load the file `Options.js` from your options page:
     enabled:    true,
     advanced:   false,
     attributes: 'alt|title',
+    bgColor:    '#ffffff',
     mode:       'compatible'
   });
   // initialize options UI with this library
@@ -49,6 +50,9 @@ Load the file `Options.js` from your options page:
 
 <!-- input field -->
 <p><label>List of attributes: <input type="text" id="attributes"></label></p>
+
+<!-- color picker -->
+<p><label>Background color: <input type="color" id="bgColor"></label></p>
 
 <!-- radio -->
 <p>Mode:</p>
