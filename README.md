@@ -1,5 +1,7 @@
 # webextensions-lib-options
 
+[![Build Status](https://travis-ci.org/piroor/webextensions-lib-options.svg?branch=master)](https://travis-ci.org/piroor/webextensions-lib-options)
+
 Provides ability to build options page.
 
 ## Required permissions
