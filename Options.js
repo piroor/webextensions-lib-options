@@ -60,6 +60,8 @@ class Options {
       setTimeout(() => {
         aUINode.dataset.configValueUpdating = false;
       }, 50);
+      if (this.importExportField)
+        this.updateImportExportField();
     }, 250));
   }
 
@@ -220,6 +222,9 @@ class Options {
       }
       node.disabled = this.configs.$isLocked(aKey);
     }
+
+    if (this.importExportField)
+      this.updateImportExportField();
   }
 
   buildUIForAllConfigs(aParent) {
@@ -284,6 +289,23 @@ class Options {
           aInput.$reset();
       });
     });
+    this.importExportField = document.getElementById('allconfigs-import-export-field');
+    this.importExportField.addEventListener('input', () => {
+      const values = JSON.parse(this.importExportField.value);
+      for (const key of Object.keys(values)) {
+        if (key in this.configs.$default)
+          this.configs[key] = values[key];
+      }
+    });
+    this.updateImportExportField();
+  }
+
+  updateImportExportField() {
+    const values = {};
+    for (const key of Object.keys(this.configs.$default).sort()) {
+      values[key] = this.configs[key];
+    }
+    this.importExportField.value = JSON.stringify(values);
   }
 };
 
