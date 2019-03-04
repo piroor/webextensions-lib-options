@@ -234,18 +234,35 @@ class Options {
         typeof value == 'boolean' ? 'checkbox' :
           'text' ;
       rows.push(`
-        <tr>
-          <td><label for="allconfigs-field-${key}">${key}</label></td>
-          <td><input id="allconfigs-field-${key}"
-                     type="${type}"></td>
-          <td><button id="allconfigs-reset-${key}">Reset</button></td>
+        <tr ${rows.length > 0 ? 'style="border-top: 1px solid rgba(0, 0, 0, 0.2);"' : ''}>
+          <td style="width: 45%; word-break: break-all;">
+            <label for="allconfigs-field-${key}">${key}</label>
+          </td>
+          <td style="width: 35%;">
+            <input id="allconfigs-field-${key}"
+                   type="${type}"
+                   ${type != 'checkbox' && type != 'radio' ? 'style="width: 100%;"' : ''}>
+          </td>
+          <td>
+            <button id="allconfigs-reset-${key}">Reset</button>
+          </td>
         </tr>
       `);
     }
-    const fragment = range.createContextualFragment(`<table><tbody>${rows.join('')}</tbody></table>`);
+    const fragment = range.createContextualFragment(`
+      <table id="allconfigs-table"
+             style="border-collapse: collapse">
+        <tbody>${rows.join('')}</tbody>
+      </table>
+      <fieldset><legend>Import/Export</legend>
+        <textarea id="allconfigs-import-export-field"
+                  rows="10"
+                  style="width: 100%;"></textarea>
+      </fieldset>
+    `);
     range.insertNode(fragment);
     range.detach();
-    const table = parent.lastChild;
+    const table = document.getElementById('allconfigs-table');
     Array.slice(table.querySelectorAll('input')).forEach(aInput => {
       const key = aInput.id.replace(/^allconfigs-field-/, '');
       switch (this.detectUIType(aInput))
