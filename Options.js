@@ -305,7 +305,7 @@ class Options {
     for (const key of Object.keys(this.configs.$default).sort()) {
       values[key] = this.configs[key];
     }
-    this.importExportField.value = JSON.stringify(values);
+    this.importExportField.value = JSON.stringify(values, null, 2);
   }
 };
 
