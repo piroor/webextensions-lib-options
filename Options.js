@@ -302,7 +302,11 @@ class Options {
   updateImportExportField() {
     const values = {};
     for (const key of Object.keys(this.configs.$default).sort()) {
-      values[key] = this.configs[key];
+      const defaultValue = JSON.stringify(this.configs.$default[key]);
+      const currentValue = JSON.stringify(this.configs[key]);
+      if (defaultValue !== currentValue) {
+        values[key] = this.configs[key];
+      }
     }
     this.importExportField.value = JSON.stringify(values);
   }
