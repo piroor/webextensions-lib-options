@@ -5,8 +5,8 @@
 */
 
 class Options {
-  constructor(aConfigs) {
-    this.configs = aConfigs;
+  constructor(configs) {
+    this.configs = configs;
     this.uiNodes = new Map();
     this.throttleTimers = new Map();
 
@@ -15,24 +15,24 @@ class Options {
     document.addEventListener('DOMContentLoaded', this.onReady);
   }
 
-  findUIForKey(aKey) {
-    return document.querySelector(`[name="${aKey}"], #${aKey}`);
+  findUIForKey(key) {
+    return document.querySelector(`[name="${key}"], #${key}`);
   }
 
-  detectUIType(aNode) {
-    if (!aNode)
+  detectUIType(node) {
+    if (!node)
       return this.UI_MISSING;
 
-    if (aNode.localName == 'textarea')
+    if (node.localName == 'textarea')
       return this.UI_TYPE_TEXT_FIELD;
 
-    if (aNode.localName == 'select')
+    if (node.localName == 'select')
       return this.UI_TYPE_SELECTBOX;
 
-    if (aNode.localName != 'input')
+    if (node.localName != 'input')
       return this.UI_TYPE_UNKNOWN;
 
-    switch (aNode.type) {
+    switch (node.type) {
       case 'text':
       case 'password':
       case 'number':
@@ -50,119 +50,117 @@ class Options {
     }
   }
 
-  throttledUpdate(aKey, aUINode, aValue) {
-    if (this.throttleTimers.has(aKey))
-      clearTimeout(this.throttleTimers.get(aKey));
-    aUINode.dataset.configValueUpdating = true;
-    this.throttleTimers.set(aKey, setTimeout(() => {
-      this.throttleTimers.delete(aKey);
-      this.configs[aKey] = this.UIValueToConfigValue(aKey, aValue);
+  throttledUpdate(key, uiNode, value) {
+    if (this.throttleTimers.has(key))
+      clearTimeout(this.throttleTimers.get(key));
+    uiNode.dataset.configValueUpdating = true;
+    this.throttleTimers.set(key, setTimeout(() => {
+      this.throttleTimers.delete(key);
+      this.configs[key] = this.UIValueToConfigValue(key, value);
       setTimeout(() => {
-        aUINode.dataset.configValueUpdating = false;
+        uiNode.dataset.configValueUpdating = false;
       }, 50);
-      if (this.importExportField)
-        this.updateImportExportField();
     }, 250));
   }
 
-  UIValueToConfigValue(aKey, aValue) {
-    switch (typeof this.configs.$default[aKey]) {
+  UIValueToConfigValue(key, value) {
+    switch (typeof this.configs.$default[key]) {
       case 'string':
-        return String(aValue);
+        return String(value);
 
       case 'number':
-        return Number(aValue);
+        return Number(value);
 
       case 'boolean':
-        if (typeof aValue == 'string')
-          return aValue != 'false';
+        if (typeof value == 'string')
+          return value != 'false';
         else
-          return Boolean(aValue);
+          return Boolean(value);
 
       default: // object
-        if (typeof aValue == 'string')
-          return JSON.parse(aValue || 'null');
+        if (typeof value == 'string')
+          return JSON.parse(value || 'null');
         else
-          return aValue;
+          return value;
     }
   }
 
-  configValueToUIValue(aValue) {
-    if (typeof aValue == 'object') {
-      let value = JSON.stringify(aValue);
+  configValueToUIValue(value) {
+    if (typeof value == 'object') {
+      value = JSON.stringify(value);
       if (value == 'null')
         value = '';
       return value;
     }
     else
-      return aValue;
+      return value;
   }
 
-  bindToCheckbox(aKey, aNode) {
-    aNode.checked = this.configValueToUIValue(this.configs[aKey]);
-    aNode.addEventListener('change', () => {
-      this.throttledUpdate(aKey, aNode, aNode.checked);
+  bindToCheckbox(key, node) {
+    node.checked = this.configValueToUIValue(this.configs[key]);
+    node.addEventListener('change', () => {
+      this.throttledUpdate(key, node, node.checked);
     });
-    aNode.disabled = this.configs.$isLocked(aKey);
-    this.addResetMethod(aKey, aNode);
-    const nodes = this.uiNodes.get(aKey) || [];
-    nodes.push(aNode);
-    this.uiNodes.set(aKey, nodes);
+    node.disabled = this.configs.$isLocked(key);
+    this.addResetMethod(key, node);
+    const nodes = this.uiNodes.get(key) || [];
+    nodes.push(node);
+    this.uiNodes.set(key, nodes);
   }
-  bindToRadio(aKey) {
-    const radios = document.querySelectorAll('input[name="' + aKey + '"]');
+  bindToRadio(key) {
+    const radios = document.querySelectorAll(`input[name="${key}"]`);
     let activated = false;
-    Array.slice(radios).forEach((aRadio) => {
-      aRadio.addEventListener('change', () => {
+    for (const radio of radios) {
+      radio.disabled = this.configs.$isLocked(key);
+      const id    = `${key}-${radio.value}`;
+      const nodes = this.uiNodes.get(id) || [];
+      nodes.push(radio);
+      this.uiNodes.set(id, nodes);
+      radio.addEventListener('change', () => {
         if (!activated)
           return;
-        const stringifiedValue = this.configs[aKey];
-        if (stringifiedValue != aRadio.value)
-          this.throttledUpdate(aKey, aRadio, aRadio.value);
+        const stringifiedValue = this.configs[key];
+        if (stringifiedValue != radio.value)
+          this.throttledUpdate(key, radio, radio.value);
       });
-      aRadio.disabled = this.configs.$isLocked(aKey);
-      const key = aKey + '-' + aRadio.value;
-      const nodes = this.uiNodes.get(key) || [];
-      nodes.push(aRadio);
-      this.uiNodes.set(key, nodes);
-    });
-    const chosens = this.uiNodes.get(aKey + '-' + this.configs[aKey]);
+    }
+    const chosens = this.uiNodes.get(`${key}-${this.configs[key]}`);
     if (chosens && chosens.length > 0)
       chosens.map(chosen => { chosen.checked = true; });
     setTimeout(() => {
       activated = true;
     }, 0);
   }
-  bindToTextField(aKey, aNode) {
-    aNode.value = this.configValueToUIValue(this.configs[aKey]);
-    aNode.addEventListener('input', () => {
-      this.throttledUpdate(aKey, aNode, aNode.value);
+  bindToTextField(key, node) {
+    node.value = this.configValueToUIValue(this.configs[key]);
+    node.addEventListener('input', () => {
+      this.throttledUpdate(key, node, node.value);
     });
-    aNode.disabled = this.configs.$isLocked(aKey);
-    this.addResetMethod(aKey, aNode);
-    const nodes = this.uiNodes.get(aKey) || [];
-    nodes.push(aNode);
-    this.uiNodes.set(aKey, nodes);
+    node.disabled = this.configs.$isLocked(key);
+    this.addResetMethod(key, node);
+    const nodes = this.uiNodes.get(key) || [];
+    nodes.push(node);
+    this.uiNodes.set(key, nodes);
   }
-  bindToSelectBox(aKey, aNode) {
-    aNode.value = this.configValueToUIValue(this.configs[aKey]);
-    aNode.addEventListener('change', () => {
-      this.throttledUpdate(aKey, aNode, aNode.value);
+  bindToSelectBox(key, node) {
+    node.value = this.configValueToUIValue(this.configs[key]);
+    node.addEventListener('change', () => {
+      this.throttledUpdate(key, node, node.value);
     });
-    aNode.disabled = this.configs.$isLocked(aKey);
-    this.addResetMethod(aKey, aNode);
-    const nodes = this.uiNodes.get(aKey) || [];
-    nodes.push(aNode);
-    this.uiNodes.set(aKey, nodes);
+    node.disabled = this.configs.$isLocked(key);
+    this.addResetMethod(key, node);
+    const nodes = this.uiNodes.get(key) || [];
+    nodes.push(node);
+    this.uiNodes.set(key, nodes);
   }
-  addResetMethod(aKey, aNode) {
-    aNode.$reset = () => {
-      const value = this.configs[aKey] =
-          this.configs.$default[aKey];
-      if (this.detectUIType(aNode) == this.UI_TYPE_CHECKBOX)
-        aNode.checked = value;
+  addResetMethod(key, node) {
+    node.$reset = () => {
+      const value = this.configs[key] =
+          this.configs.$default[key];
+      if (this.detectUIType(node) == this.UI_TYPE_CHECKBOX)
+        node.checked = value;
       else
-        aNode.value = value;
+        node.value = value;
     };
   }
 
@@ -174,61 +172,58 @@ class Options {
 
     this.configs.$addObserver(this.onConfigChanged);
     await this.configs.$loaded;
-    Object.keys(this.configs.$default).forEach(aKey => {
-      const node = this.findUIForKey(aKey);
+    for (const key of Object.keys(this.configs.$default)) {
+      const node = this.findUIForKey(key);
       if (!node)
-        return;
+        continue;
       switch (this.detectUIType(node)) {
         case this.UI_TYPE_CHECKBOX:
-          this.bindToCheckbox(aKey, node);
+          this.bindToCheckbox(key, node);
           break;
 
         case this.UI_TYPE_RADIO:
-          this.bindToRadio(aKey);
+          this.bindToRadio(key);
           break;
 
         case this.UI_TYPE_TEXT_FIELD:
-          this.bindToTextField(aKey, node);
+          this.bindToTextField(key, node);
           break;
 
         case this.UI_TYPE_SELECTBOX:
-          this.bindToSelectBox(aKey, node);
+          this.bindToSelectBox(key, node);
           break;
 
         case this.UI_MISSING:
-          return;
+          continue;
 
         default:
-          throw new Error('unknown type UI element for ' + aKey);
+          throw new Error(`unknown type UI element for ${key}`);
       }
-    });
+    }
   }
 
-  onConfigChanged(aKey) {
-    let nodes = this.uiNodes.get(aKey);
+  onConfigChanged(key) {
+    let nodes = this.uiNodes.get(key);
     if (!nodes) // possibly radio
-      nodes = this.uiNodes.get(aKey + '-' + this.configs[aKey]);
+      nodes = this.uiNodes.get(`${key}-${this.configs[key]}`);
     if (!nodes || !nodes.length)
       return;
 
     for (const node of nodes) {
       if (node.dataset.configValueUpdating)
-        return;
+        continue;
       if ('checked' in node) {
-        node.checked = !!this.configs[aKey];
+        node.checked = !!this.configs[key];
       }
       else {
-        node.value = this.configValueToUIValue(this.configs[aKey]);
+        node.value = this.configValueToUIValue(this.configs[key]);
       }
-      node.disabled = this.configs.$isLocked(aKey);
+      node.disabled = this.configs.$isLocked(key);
     }
-
-    if (this.importExportField)
-      this.updateImportExportField();
   }
 
-  buildUIForAllConfigs(aParent) {
-    const parent = aParent || document.body;
+  buildUIForAllConfigs(parent) {
+    parent = parent || document.body;
     const range = document.createRange();
     range.selectNodeContents(parent);
     range.collapse(false);
@@ -275,27 +270,26 @@ class Options {
     range.insertNode(fragment);
     range.detach();
     const table = document.getElementById('allconfigs-table');
-    Array.slice(table.querySelectorAll('input')).forEach(aInput => {
-      const key = aInput.id.replace(/^allconfigs-field-/, '');
-      switch (this.detectUIType(aInput))
-      {
+    for (const input of table.querySelectorAll('input')) {
+      const key = input.id.replace(/^allconfigs-field-/, '');
+      switch (this.detectUIType(input)) {
         case this.UI_TYPE_CHECKBOX:
-          this.bindToCheckbox(key, aInput);
+          this.bindToCheckbox(key, input);
           break;
 
         case this.UI_TYPE_TEXT_FIELD:
-          this.bindToTextField(key, aInput);
+          this.bindToTextField(key, input);
           break;
       }
       const button = table.querySelector(`#allconfigs-reset-${key}`);
       button.addEventListener('click', () => {
-        aInput.$reset();
+        input.$reset();
       });
-      button.addEventListener('keyup', (aEvent) => {
-        if (aEvent.key == 'Enter' || aEvent.key == ' ')
-          aInput.$reset();
+      button.addEventListener('keyup', event => {
+        if (event.key == 'Enter' || event.key == ' ')
+          input.$reset();
       });
-    });
+    }
     const exportButton = document.getElementById('allconfigs-export');
     exportButton.addEventListener('keydown', event => {
       if (event.key == 'Enter' || event.key == ' ')
