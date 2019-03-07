@@ -308,7 +308,7 @@ class Options {
         values[key] = this.configs[key];
       }
     }
-    this.importExportField.value = JSON.stringify(values);
+    this.importExportField.value = JSON.stringify(values, null, 2);
   }
 };
 
