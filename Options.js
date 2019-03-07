@@ -292,9 +292,8 @@ class Options {
     this.importExportField = document.getElementById('allconfigs-import-export-field');
     this.importExportField.addEventListener('input', () => {
       const values = JSON.parse(this.importExportField.value);
-      for (const key of Object.keys(values)) {
-        if (key in this.configs.$default)
-          this.configs[key] = values[key];
+      for (const key of Object.keys(this.configs.$default)) {
+        this.configs[key] = values[key] !== undefined ? values[key] : this.configs.$default[key]
       }
     });
     this.updateImportExportField();
