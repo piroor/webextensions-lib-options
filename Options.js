@@ -308,6 +308,8 @@ class Options {
         values[key] = this.configs[key];
       }
     }
+    // Pretty print the exported JSON, because some major addons
+    // including Stylus and uBlock do that.
     this.importExportField.value = JSON.stringify(values, null, 2);
   }
 };
