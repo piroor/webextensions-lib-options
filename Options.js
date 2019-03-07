@@ -259,11 +259,18 @@ class Options {
              style="border-collapse: collapse">
         <tbody>${rows.join('')}</tbody>
       </table>
-      <fieldset><legend>Import/Export</legend>
-        <textarea id="allconfigs-import-export-field"
-                  rows="10"
-                  style="width: 100%;"></textarea>
-      </fieldset>
+      <div>
+        <button id="allconfigs-export">Export</button>
+        <a id="allconfigs-export-file"
+           type="application/json"
+           download="configs-${browser.runtime.id}.json"
+           style="display:none"></a>
+        <button id="allconfigs-import">Import</button>
+        <input id="allconfigs-import-file"
+               type="file"
+               accept="application/json"
+               style="display:none">
+      </div>
     `);
     range.insertNode(fragment);
     range.detach();
@@ -285,21 +292,46 @@ class Options {
         aInput.$reset();
       });
       button.addEventListener('keyup', (aEvent) => {
-        if (aEvent.key == 'Enter')
+        if (aEvent.key == 'Enter' || aEvent.key == ' ')
           aInput.$reset();
       });
     });
-    this.importExportField = document.getElementById('allconfigs-import-export-field');
-    this.importExportField.addEventListener('input', () => {
-      const values = JSON.parse(this.importExportField.value);
-      for (const key of Object.keys(this.configs.$default)) {
-        this.configs[key] = values[key] !== undefined ? values[key] : this.configs.$default[key]
-      }
+    const exportButton = document.getElementById('allconfigs-export');
+    exportButton.addEventListener('keydown', event => {
+      if (event.key == 'Enter' || event.key == ' ')
+        this.exportToFile();
     });
-    this.updateImportExportField();
+    exportButton.addEventListener('click', event => {
+      if (event.button == 0)
+        this.exportToFile();
+    });
+    const importButton = document.getElementById('allconfigs-import');
+    importButton.addEventListener('keydown', event => {
+      if (event.key == 'Enter' || event.key == ' ')
+        this.importFromFile();
+    });
+    importButton.addEventListener('click', event => {
+      if (event.button == 0)
+        this.importFromFile();
+    });
+    const fileField = document.getElementById('allconfigs-import-file');
+    fileField.addEventListener('change', _event => {
+      const reader = new FileReader();
+      reader.onload = event => {
+        const values = JSON.parse(event.target.result);
+        for (const key of Object.keys(this.configs.$default)) {
+          this.configs[key] = values[key] !== undefined ? values[key] : this.configs.$default[key]
+        }
+      };
+      reader.readAsText(fileField.files.item(0), 'utf-8');
+    });
   }
 
-  updateImportExportField() {
+  importFromFile() {
+    document.getElementById('allconfigs-import-file').click();
+  }
+
+  exportToFile() {
     const values = {};
     for (const key of Object.keys(this.configs.$default).sort()) {
       const defaultValue = JSON.stringify(this.configs.$default[key]);
@@ -310,7 +342,10 @@ class Options {
     }
     // Pretty print the exported JSON, because some major addons
     // including Stylus and uBlock do that.
-    this.importExportField.value = JSON.stringify(values, null, 2);
+    const exported = JSON.stringify(values, null, 2);
+    const link = document.getElementById('allconfigs-export-file');
+    link.href = URL.createObjectURL(new Blob([exported], { type: 'application/json' }));
+    link.click();
   }
 };
 
