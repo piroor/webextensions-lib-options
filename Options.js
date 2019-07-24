@@ -15,8 +15,8 @@ class Options {
     document.addEventListener('DOMContentLoaded', this.onReady);
   }
 
-  findUIForKey(key) {
-    return document.querySelector(`[name="${key}"], #${key}`);
+  findUIsForKey(key) {
+    return document.querySelectorAll(`[name="${key}"], #${key}, [data-config-key="${key}"]`);
   }
 
   detectUIType(node) {
@@ -173,9 +173,10 @@ class Options {
     this.configs.$addObserver(this.onConfigChanged);
     await this.configs.$loaded;
     for (const key of Object.keys(this.configs.$default)) {
-      const node = this.findUIForKey(key);
-      if (!node)
+      const nodes = this.findUIsForKey(key);
+      if (!nodes.length)
         continue;
+      for (const node of nodes) {
       switch (this.detectUIType(node)) {
         case this.UI_TYPE_CHECKBOX:
           this.bindToCheckbox(key, node);
@@ -198,6 +199,7 @@ class Options {
 
         default:
           throw new Error(`unknown type UI element for ${key}`);
+      }
       }
     }
   }
