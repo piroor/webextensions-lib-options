@@ -177,29 +177,29 @@ class Options {
       if (!nodes.length)
         continue;
       for (const node of nodes) {
-      switch (this.detectUIType(node)) {
-        case this.UI_TYPE_CHECKBOX:
-          this.bindToCheckbox(key, node);
-          break;
+        switch (this.detectUIType(node)) {
+          case this.UI_TYPE_CHECKBOX:
+            this.bindToCheckbox(key, node);
+            break;
 
-        case this.UI_TYPE_RADIO:
-          this.bindToRadio(key);
-          break;
+          case this.UI_TYPE_RADIO:
+            this.bindToRadio(key);
+            break;
 
-        case this.UI_TYPE_TEXT_FIELD:
-          this.bindToTextField(key, node);
-          break;
+          case this.UI_TYPE_TEXT_FIELD:
+            this.bindToTextField(key, node);
+            break;
 
-        case this.UI_TYPE_SELECTBOX:
-          this.bindToSelectBox(key, node);
-          break;
+          case this.UI_TYPE_SELECTBOX:
+            this.bindToSelectBox(key, node);
+            break;
 
-        case this.UI_MISSING:
-          continue;
+          case this.UI_MISSING:
+            continue;
 
-        default:
-          throw new Error(`unknown type UI element for ${key}`);
-      }
+          default:
+            throw new Error(`unknown type UI element for ${key}`);
+        }
       }
     }
   }
