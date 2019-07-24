@@ -107,13 +107,16 @@ class Options {
     nodes.push(node);
     this.uiNodes.set(key, nodes);
   }
-  bindToRadio(key) {
-    const radios = document.querySelectorAll(`input[name="${key}"]`);
+  bindToRadio(key, node) {
+    const group  = node.getAttribute('name');
+    const radios = document.querySelectorAll(`input[name="${group}"]`);
     let activated = false;
     for (const radio of radios) {
-      radio.disabled = this.configs.$isLocked(key);
-      const id    = `${key}-${radio.value}`;
+      const id    = `${key}-${group}-${radio.value}`;
       const nodes = this.uiNodes.get(id) || [];
+      if (nodes.includes(radio))
+        continue;
+      radio.disabled = this.configs.$isLocked(key);
       nodes.push(radio);
       this.uiNodes.set(id, nodes);
       radio.addEventListener('change', () => {
@@ -124,7 +127,7 @@ class Options {
           this.throttledUpdate(key, radio, radio.value);
       });
     }
-    const chosens = this.uiNodes.get(`${key}-${this.configs[key]}`);
+    const chosens = this.uiNodes.get(`${key}-${group}-${this.configs[key]}`);
     if (chosens && chosens.length > 0)
       chosens.map(chosen => { chosen.checked = true; });
     setTimeout(() => {
@@ -183,7 +186,7 @@ class Options {
             break;
 
           case this.UI_TYPE_RADIO:
-            this.bindToRadio(key);
+            this.bindToRadio(key, node);
             break;
 
           case this.UI_TYPE_TEXT_FIELD:
