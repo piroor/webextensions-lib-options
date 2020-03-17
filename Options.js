@@ -260,6 +260,7 @@ class Options {
         <tbody>${rows.join('')}</tbody>
       </table>
       <div>
+        <button id="allconfigs-reset-all">Reset All</button>
         <button id="allconfigs-export">Export</button>
         <a id="allconfigs-export-file"
            type="application/json"
@@ -295,6 +296,15 @@ class Options {
           input.$reset();
       });
     }
+    const resetAllButton = document.getElementById('allconfigs-reset-all');
+    resetAllButton.addEventListener('keydown', event => {
+      if (event.key == 'Enter' || event.key == ' ')
+        this.resetAll();
+    });
+    resetAllButton.addEventListener('click', event => {
+      if (event.button == 0)
+        this.resetAll();
+    });
     const exportButton = document.getElementById('allconfigs-export');
     exportButton.addEventListener('keydown', event => {
       if (event.key == 'Enter' || event.key == ' ')
@@ -319,11 +329,17 @@ class Options {
       reader.onload = event => {
         const values = JSON.parse(event.target.result);
         for (const key of Object.keys(this.configs.$default)) {
-          this.configs[key] = values[key] !== undefined ? values[key] : this.configs.$default[key]
+          this.configs[key] = values[key] !== undefined ? values[key] : this.configs.$default[key];
         }
       };
       reader.readAsText(fileField.files.item(0), 'utf-8');
     });
+  }
+
+  resetAll() {
+    for (const key of Object.keys(this.configs.$default)) {
+      this.configs[key] = this.configs.$default[key];
+    }
   }
 
   importFromFile() {
