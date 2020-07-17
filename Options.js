@@ -101,7 +101,7 @@ class Options {
     node.disabled = locked;
     const label = node.closest('label');
     if (label)
-      label.classList.toggle('disabled', locked);
+      label.classList.toggle('locked', locked);
   }
 
   bindToCheckbox(key, node) {
