@@ -96,12 +96,20 @@ class Options {
       return value;
   }
 
+  applyLocked(node, key) {
+    const locked = this.configs.$isLocked(key);
+    node.disabled = locked;
+    const label = node.closest('label');
+    if (label)
+      label.classList.toggle('disabled', locked);
+  }
+
   bindToCheckbox(key, node) {
     node.checked = this.configValueToUIValue(this.configs[key]);
     node.addEventListener('change', () => {
       this.throttledUpdate(key, node, node.checked);
     });
-    node.disabled = this.configs.$isLocked(key);
+    this.applyLocked(node, key);
     this.addResetMethod(key, node);
     const nodes = this.uiNodes.get(key) || [];
     nodes.push(node);
@@ -116,7 +124,7 @@ class Options {
       const nodes = this.uiNodes.get(id) || [];
       if (nodes.includes(radio))
         continue;
-      radio.disabled = this.configs.$isLocked(key);
+      this.applyLocked(radio, key);
       nodes.push(radio);
       this.uiNodes.set(id, nodes);
       radio.addEventListener('change', () => {
@@ -139,7 +147,7 @@ class Options {
     node.addEventListener('input', () => {
       this.throttledUpdate(key, node, node.value);
     });
-    node.disabled = this.configs.$isLocked(key);
+    this.applyLocked(node, key);
     this.addResetMethod(key, node);
     const nodes = this.uiNodes.get(key) || [];
     nodes.push(node);
@@ -150,7 +158,7 @@ class Options {
     node.addEventListener('change', () => {
       this.throttledUpdate(key, node, node.value);
     });
-    node.disabled = this.configs.$isLocked(key);
+    this.applyLocked(node, key);
     this.addResetMethod(key, node);
     const nodes = this.uiNodes.get(key) || [];
     nodes.push(node);
@@ -223,7 +231,7 @@ class Options {
       else {
         node.value = this.configValueToUIValue(this.configs[key]);
       }
-      node.disabled = this.configs.$isLocked(key);
+      this.applyLocked(node, key);
     }
   }
 
