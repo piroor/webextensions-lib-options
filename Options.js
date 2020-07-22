@@ -99,7 +99,7 @@ class Options {
   applyLocked(node, key) {
     const locked = this.configs.$isLocked(key);
     node.disabled = locked;
-    const label = node.closest('label');
+    const label = node.closest('label') || (node.id && node.ownerDocument.querySelector(`label[for="${node.id}"]`)) || node;
     if (label)
       label.classList.toggle('locked', locked);
   }
