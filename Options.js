@@ -1,5 +1,5 @@
 /*
- license: The MIT License, Copyright (c) 2016-2018 YUKI "Piro" Hiroshi
+ license: The MIT License, Copyright (c) 2016-2020 YUKI "Piro" Hiroshi
  original:
    http://github.com/piroor/webextensions-lib-options
 */
@@ -120,13 +120,12 @@ class Options {
     const radios = document.querySelectorAll(`input[name="${group}"]`);
     let activated = false;
     for (const radio of radios) {
-      const id    = `${key}-${group}-${radio.value}`;
-      const nodes = this.uiNodes.get(id) || [];
+      const nodes = this.uiNodes.get(key) || [];
       if (nodes.includes(radio))
         continue;
       this.applyLocked(radio, key);
       nodes.push(radio);
-      this.uiNodes.set(id, nodes);
+      this.uiNodes.set(key, nodes);
       radio.addEventListener('change', () => {
         if (!activated)
           return;
@@ -135,7 +134,8 @@ class Options {
           this.throttledUpdate(key, radio, radio.value);
       });
     }
-    const chosens = this.uiNodes.get(`${key}-${group}-${this.configs[key]}`);
+    const selector = `input[type="radio"][value=${JSON.stringify(String(this.configs[key]))}]`;
+    const chosens = (this.uiNodes.get(key) || []).filter(node => node.matches(selector));
     if (chosens && chosens.length > 0)
       chosens.map(chosen => { chosen.checked = true; });
     setTimeout(() => {
@@ -216,16 +216,17 @@ class Options {
   }
 
   onConfigChanged(key) {
-    let nodes = this.uiNodes.get(key);
-    if (!nodes) // possibly radio
-      nodes = this.uiNodes.get(`${key}-${this.configs[key]}`);
+    const nodes = this.uiNodes.get(key);
     if (!nodes || !nodes.length)
       return;
 
     for (const node of nodes) {
       if (node.dataset.configValueUpdating)
         continue;
-      if ('checked' in node) {
+      if (node.matches('input[type="radio"]')) {
+        node.checked = this.configs[key] == node.value;
+      }
+      else if ('checked' in node) {
         node.checked = !!this.configs[key];
       }
       else {
