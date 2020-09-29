@@ -342,10 +342,10 @@ class Options {
     const fileField = document.getElementById('allconfigs-import-file');
     fileField.addEventListener('change', async _event => {
       const text = await fileField.files.item(0).text();
-        const values = JSON.parse(text);
-        for (const key of Object.keys(this.configs.$default)) {
-          this.configs[key] = values[key] !== undefined ? values[key] : this.configs.$default[key];
-        }
+      const values = JSON.parse(text);
+      for (const key of Object.keys(this.configs.$default)) {
+        this.configs[key] = values[key] !== undefined ? values[key] : this.configs.$default[key];
+      }
     });
   }
   sanitizeForHTMLText(text) {
