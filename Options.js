@@ -222,7 +222,7 @@ class Options {
       return;
 
     for (const node of nodes) {
-      if (node.dataset.configValueUpdating)
+      if (node.dataset.configValueUpdating == 'true')
         continue;
       if (node.matches('input[type="radio"]')) {
         node.checked = this.configs[key] == node.value;
