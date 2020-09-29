@@ -20,8 +20,7 @@ Load the file `Options.js` from your options page:
 {
   "default_locale": "en_US",
   "options_ui": {
-    "page": "path/to/options.html",
-    "chrome_style": true
+    "page": "path/to/options.html"
   }
 }
 ```
@@ -34,7 +33,7 @@ Load the file `Options.js` from your options page:
 <script type="application/javascript" src="path/to/Configs.js"></script>
 <script type="application/javascript" src="path/to/Options.js"></script>
 <script type="application/javascript">
-  var configs = new Configs({
+  const configs = new Configs({
     // define default configurations at here
     enabled:    true,
     advanced:   false,
@@ -43,7 +42,7 @@ Load the file `Options.js` from your options page:
     mode:       'compatible'
   });
   // initialize options UI with this library
-  var options = new Options(configs);
+  const options = new Options(configs);
 </script>
 
 <!-- checkbox -->
