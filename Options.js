@@ -250,22 +250,22 @@ class Options {
           'text' ;
       // To accept decimal values like "1.1", we need to set "step" with decmimal values.
       // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number
-      const step = type != 'number' ? '' : (this.steps[key] || `step="${String(1.75).replace(/[1-9]/g, '0').replace(/0$/, '1')}"`);
-      const placeholder = type == 'checkbox' ? '' : `placeholder=${JSON.stringify(String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'))}`;
+      const step = type != 'number' ? '' : `step="${this.sanitizeForHTMLText(key in this.steps ? this.steps[key] : String(1.75).replace(/[1-9]/g, '0').replace(/0$/, '1'))}"`;
+      const placeholder = type == 'checkbox' ? '' : `placeholder=${JSON.stringify(this.sanitizeForHTMLText(String(value)))}`;
       rows.push(`
         <tr ${rows.length > 0 ? 'style="border-top: 1px solid rgba(0, 0, 0, 0.2);"' : ''}>
           <td style="width: 45%; word-break: break-all;">
-            <label for="allconfigs-field-${key}">${key}</label>
+            <label for="allconfigs-field-${this.sanitizeForHTMLText(key)}">${this.sanitizeForHTMLText(key)}</label>
           </td>
           <td style="width: 35%;">
-            <input id="allconfigs-field-${key}"
+            <input id="allconfigs-field-${this.sanitizeForHTMLText(key)}"
                    type="${type}"
                    ${type != 'checkbox' && type != 'radio' ? 'style="width: 100%;"' : ''}
                    ${step}
                    ${placeholder}>
           </td>
           <td>
-            <button id="allconfigs-reset-${key}">Reset</button>
+            <button id="allconfigs-reset-${this.sanitizeForHTMLText(key)}">Reset</button>
           </td>
         </tr>
       `);
@@ -350,6 +350,9 @@ class Options {
       };
       reader.readAsText(fileField.files.item(0), 'utf-8');
     });
+  }
+  sanitizeForHTMLText(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   resetAll() {
