@@ -340,15 +340,12 @@ class Options {
         this.importFromFile();
     });
     const fileField = document.getElementById('allconfigs-import-file');
-    fileField.addEventListener('change', _event => {
-      const reader = new FileReader();
-      reader.onload = event => {
-        const values = JSON.parse(event.target.result);
+    fileField.addEventListener('change', async _event => {
+      const text = await fileField.files.item(0).text();
+        const values = JSON.parse(text);
         for (const key of Object.keys(this.configs.$default)) {
           this.configs[key] = values[key] !== undefined ? values[key] : this.configs.$default[key];
         }
-      };
-      reader.readAsText(fileField.files.item(0), 'utf-8');
     });
   }
   sanitizeForHTMLText(text) {
