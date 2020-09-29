@@ -5,8 +5,9 @@
 */
 
 class Options {
-  constructor(configs) {
+  constructor(configs, { steps } = {}) {
     this.configs = configs;
+    this.steps = steps || {};
     this.uiNodes = new Map();
     this.throttleTimers = new Map();
 
@@ -247,6 +248,10 @@ class Options {
       const type = typeof value == 'number' ? 'number' :
         typeof value == 'boolean' ? 'checkbox' :
           'text' ;
+      // To accept decimal values like "1.1", we need to set "step" with decmimal values.
+      // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number
+      const step = type != 'number' ? '' : (this.steps[key] || `step="${String(1.75).replace(/[1-9]/g, '0').replace(/0$/, '1')}"`);
+      const placeholder = type == 'checkbox' ? '' : `placeholder=${JSON.stringify(String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'))}`;
       rows.push(`
         <tr ${rows.length > 0 ? 'style="border-top: 1px solid rgba(0, 0, 0, 0.2);"' : ''}>
           <td style="width: 45%; word-break: break-all;">
@@ -255,7 +260,9 @@ class Options {
           <td style="width: 35%;">
             <input id="allconfigs-field-${key}"
                    type="${type}"
-                   ${type != 'checkbox' && type != 'radio' ? 'style="width: 100%;"' : ''}>
+                   ${type != 'checkbox' && type != 'radio' ? 'style="width: 100%;"' : ''}
+                   ${step}
+                   ${placeholder}>
           </td>
           <td>
             <button id="allconfigs-reset-${key}">Reset</button>
