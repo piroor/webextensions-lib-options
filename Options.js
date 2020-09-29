@@ -344,7 +344,11 @@ class Options {
       const text = await fileField.files.item(0).text();
       const values = JSON.parse(text);
       for (const key of Object.keys(this.configs.$default)) {
-        this.configs[key] = values[key] !== undefined ? values[key] : this.configs.$default[key];
+        const value = values[key] !== undefined ? values[key] : this.configs.$default[key];
+        const changed = value != this.configs[key];
+        this.configs[key] = value;
+        if (changed)
+          this.onConfigChanged(key);
       }
     });
   }
