@@ -227,7 +227,7 @@ class Options {
       if (node.matches('input[type="radio"]')) {
         node.checked = this.configs[key] == node.value;
       }
-      else if ('checked' in node) {
+      else if (node.matches('input[type="checkbox"]')) {
         node.checked = !!this.configs[key];
       }
       else {
