@@ -385,9 +385,9 @@ class Options {
         break;
 
       default:
-    const link = document.getElementById('allconfigs-export-file');
-    link.href = URL.createObjectURL(new Blob([exported], { type: 'application/json' }));
-    link.click();
+        const link = document.getElementById('allconfigs-export-file');
+        link.href = URL.createObjectURL(new Blob([exported], { type: 'application/json' }));
+        link.click();
         break;
     }
   }
