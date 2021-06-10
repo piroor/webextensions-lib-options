@@ -1,6 +1,6 @@
 # webextensions-lib-options
 
-[![Build Status](https://travis-ci.org/piroor/webextensions-lib-options.svg?branch=trunk)](https://travis-ci.org/piroor/webextensions-lib-options)
+![Build Status](https://github.com/piroor/webextensions-lib-options/actions/workflows/main.yml/badge.svg?branch=trunk)
 
 Provides ability to build options page.
 
