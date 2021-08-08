@@ -5,9 +5,13 @@
 */
 
 class Options {
-  constructor(configs, { steps } = {}) {
+  constructor(configs, { steps, onImporting, onImported, onExporting, onExported } = {}) {
     this.configs = configs;
     this.steps = steps || {};
+    this.$onImporting = onImporting;
+    this.$onImported  = onImported;
+    this.$onExporting = onExporting;
+    this.$onExported  = onExported;
     this.uiNodes = new Map();
     this.throttleTimers = new Map();
 
@@ -342,7 +346,9 @@ class Options {
     const fileField = document.getElementById('allconfigs-import-file');
     fileField.addEventListener('change', async _event => {
       const text = await fileField.files.item(0).text();
-      const values = JSON.parse(text);
+      let values = JSON.parse(text);
+      if (typeof this.$onImporting == 'function')
+        values = await this.$onImporting(values);
       for (const key of Object.keys(this.configs.$default)) {
         const value = values[key] !== undefined ? values[key] : this.configs.$default[key];
         const changed = value != this.configs[key];
@@ -350,6 +356,8 @@ class Options {
         if (changed)
           this.onConfigChanged(key);
       }
+      if (typeof this.$onImported == 'function')
+        await this.$onImported();
     });
   }
   sanitizeForHTMLText(text) {
@@ -367,7 +375,7 @@ class Options {
   }
 
   async exportToFile() {
-    const values = {};
+    let values = {};
     for (const key of Object.keys(this.configs.$default).sort()) {
       const defaultValue = JSON.stringify(this.configs.$default[key]);
       const currentValue = JSON.stringify(this.configs[key]);
@@ -375,6 +383,8 @@ class Options {
         values[key] = this.configs[key];
       }
     }
+    if (typeof this.$onExporting == 'function')
+      values = await this.$onExporting(values);
     // Pretty print the exported JSON, because some major addons
     // including Stylus and uBlock do that.
     const exported = JSON.stringify(values, null, 2);
@@ -390,6 +400,8 @@ class Options {
         link.click();
         break;
     }
+    if (typeof this.$onExported == 'function')
+      await this.$onExported();
   }
 };
 
