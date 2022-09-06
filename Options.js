@@ -171,8 +171,8 @@ class Options {
   }
   addResetMethod(key, node) {
     node.$reset = () => {
-      const value = this.configs[key] =
-          this.configs.$default[key];
+      this.configs.$reset(key);
+      const value = this.configs.$default[key];
       if (this.detectUIType(node) == this.UI_TYPE_CHECKBOX)
         node.checked = value;
       else
@@ -365,9 +365,7 @@ class Options {
   }
 
   resetAll() {
-    for (const key of Object.keys(this.configs.$default)) {
-      this.configs[key] = this.configs.$default[key];
-    }
+    this.configs.$reset();
   }
 
   importFromFile() {
