@@ -21,6 +21,7 @@ class Options {
   }
 
   findUIsForKey(key) {
+    key = this._sanitizeForSelector(key);
     return document.querySelectorAll(`[name="${key}"], #${key}, [data-config-key="${key}"]`);
   }
 
@@ -104,7 +105,8 @@ class Options {
   applyLocked(node, key) {
     const locked = this.configs.$isLocked(key);
     node.disabled = locked;
-    const label = node.closest('label') || (node.id && node.ownerDocument.querySelector(`label[for="${node.id}"]`)) || node;
+    const selector = node.id && `label[for="${this._sanitizeForSelector(node.id)}"]`;
+    const label = node.closest('label') || (node.id && node.ownerDocument.querySelector(selector)) || node;
     if (label)
       label.classList.toggle('locked', locked);
   }
@@ -122,7 +124,7 @@ class Options {
   }
   bindToRadio(key, node) {
     const group  = node.getAttribute('name');
-    const radios = document.querySelectorAll(`input[name="${group}"]`);
+    const radios = document.querySelectorAll(`input[name="${this._sanitizeForSelector(group)}"]`);
     let activated = false;
     for (const radio of radios) {
       const nodes = this.uiNodes.get(key) || [];
@@ -307,7 +309,7 @@ class Options {
           this.bindToTextField(key, input);
           break;
       }
-      const button = table.querySelector(`#allconfigs-reset-${key}`);
+      const button = table.querySelector(`#allconfigs-reset-${this._sanitizeForSelector(key)}`);
       button.addEventListener('click', () => {
         input.$reset();
       });
@@ -400,6 +402,10 @@ class Options {
     }
     if (typeof this.$onExported == 'function')
       await this.$onExported();
+  }
+
+  _sanitizeForSelector(string) {
+    return string.replace(/[:\[\]()]/g, '\\$&');
   }
 };
 
