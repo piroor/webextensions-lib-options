@@ -22,6 +22,8 @@ class Options {
 
   findUIsForKey(key) {
     key = this._sanitizeForSelector(key);
+    if (!key)
+      return [];
     return document.querySelectorAll(`[name="${key}"], #${key}, [data-config-key="${key}"]`);
   }
 
