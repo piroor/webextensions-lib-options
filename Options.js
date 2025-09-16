@@ -256,7 +256,7 @@ class Options {
       const type = typeof value == 'number' ? 'number' :
         typeof value == 'boolean' ? 'checkbox' :
           'text' ;
-      // To accept decimal values like "1.1", we need to set "step" with decmimal values.
+      // To accept decimal values like "1.1", we need to set "step" with decimal values.
       // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/number
       const step = type != 'number' ? '' : `step="${this.sanitizeForHTMLText(key in this.steps ? this.steps[key] : String(1.75).replace(/[1-9]/g, '0').replace(/0$/, '1'))}"`;
       const placeholder = type == 'checkbox' ? '' : `placeholder=${JSON.stringify(this.sanitizeForHTMLText(String(value)))}`;
